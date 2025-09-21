@@ -40,7 +40,7 @@ export default function App() {
   const params = new URLSearchParams(window.location.search);
   const isAdmin = (params.get("user") || "").toLowerCase() === "admin";
   return (
-    <div className="min-h-screen bg-gray-100 flex items-start justify-center p-6">
+    <div className="flex items-start justify-center p-6">
       {isAdmin ? <InstructorView /> : <StudentView />}
     </div>
   );
@@ -85,7 +85,7 @@ function StudentView() {
       setGameExists(true);
       const raw = snap.val() || {};
       const defaults = {
-        assignmentMode: "choice",
+        assignmentMode: "random",
         sequential: false,
         revealPayoffs: false,
         autoProgress: false,
@@ -438,9 +438,12 @@ function StudentView() {
     return (currentRoundCompleted || gameFinished) && (opponentChoice === 0 || opponentChoice === 1);
   })();
 
+  const roleTableClass =
+    role === "A" ? "playera" : role === "B" ? "playerb" : "";
+
   return (
-    <div className="bg-white shadow rounded-lg p-6 w-full max-w-lg space-y-4">
-      <h2 className="text-lg font-bold text-center">Student View</h2>
+    <div className="bg-white rounded-lg p-6 w-full max-w-lg space-y-4">
+      <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input
@@ -461,16 +464,16 @@ function StudentView() {
       </div>
 
       {resetNotice && !playerKey && (
-        <div className="text-sm text-orange-600">{resetNotice}</div>
+        <div className="text-sm text-alert">{resetNotice}</div>
       )}
 
       {gameCode && gameExists === false && (
-        <div className="text-sm text-red-600">
+        <div className="text-sm text-red">
           Game code not found. Verify the code with your instructor.
         </div>
       )}
       {gameCode && gameExists === null && (
-        <div className="text-xs text-gray-500">Checking game code...</div>
+        <div className="text-xs text-grey">Checking game code...</div>
       )}
 
       {settings?.assignmentMode === "choice" && !playerKey && (
@@ -510,15 +513,15 @@ function StudentView() {
                 : "bg-blue-600"
             }`}
           >
-            Join (random)
+            Join
           </button>
         </div>
       )}
 
       {playerKey && (
         <>
-          <div className="text-sm text-gray-600">
-            You: {name} — Role: {role} — id:{" "}
+          <div className="text-sm text-grey">
+            You: {name} — Player: <span className = {`font-bold ${roleTableClass}`}>{role}</span> — id:{" "}
             <span className="font-mono">{playerKey}</span>
           </div>
           <div className="text-center font-semibold">
@@ -529,7 +532,7 @@ function StudentView() {
           {!gameFinished && (
             <div>
               {!displayed && (
-                <div className="text-center text-red-600 font-semibold">
+                <div className="text-center text-red font-semibold">
                   ⏳ Wait for your turn
                 </div>
               )}
@@ -538,7 +541,7 @@ function StudentView() {
                   <h3 className="font-semibold text-center">
                     Payoffs (A,B)
                   </h3>
-                  <table className="w-full border text-center mt-2">
+                  <table className={`w-full border text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -576,7 +579,7 @@ function StudentView() {
               {displayed?.side && (
                 <div>
                   <h3 className="font-semibold text-center">Your Payoffs</h3>
-                  <table className="w-full border text-center mt-2">
+                  <table className={`w-full border text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -616,7 +619,7 @@ function StudentView() {
                 className={`py-2 rounded ${
                   isMyTurn
                     ? "bg-green-600 text-white"
-                    : "bg-gray-300 text-gray-600"
+                    : "bg-gray-300 text-grey"
                 }`}
               >
                 {settings?.labels?.[role]?.[0] ?? "Option 1"}
@@ -633,7 +636,7 @@ function StudentView() {
                 className={`py-2 rounded ${
                   isMyTurn
                     ? "bg-red-600 text-white"
-                    : "bg-gray-300 text-gray-600"
+                    : "bg-gray-300 text-grey"
                 }`}
               >
                 {settings?.labels?.[role]?.[1] ?? "Option 2"}
@@ -656,7 +659,7 @@ function StudentView() {
 
           {gameFinished && (
             <div className="mt-6 space-y-4">
-              <div className="text-center text-xl font-bold text-green-700">
+              <div className="text-center text-xl font-bold text-green">
                 ✅ Game Completed – Summary
               </div>
               {payoffs && (
@@ -664,7 +667,7 @@ function StudentView() {
                   <h3 className="font-semibold text-center">
                     Full Payoff Matrix (A,B)
                   </h3>
-                  <table className="w-full border text-center mt-2 text-sm">
+                  <table className={`w-full border text-center mt-2 text-sm`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -737,7 +740,7 @@ function StudentView() {
               ))}
 
               {summaryData?.pairs.length === 0 && (
-                <div className="text-sm text-center text-gray-500">
+                <div className="text-sm text-center text-grey">
                   No complete pairs formed.
                 </div>
               )}
@@ -1203,7 +1206,7 @@ function InstructorView() {
             </tr>
           </tbody>
         </table>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-grey mt-1">
           Enter cell like: <code>3,3</code>
         </p>
       </div>
@@ -1222,7 +1225,7 @@ function InstructorView() {
         </ul>
       </div>
 
-      <details className="text-xs text-gray-500">
+      <details className="text-xs text-grey">
         <summary className="cursor-pointer">
           Debug: DB snapshot (games/{gameCode}) & current-round snapshot
         </summary>
