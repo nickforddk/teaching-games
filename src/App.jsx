@@ -442,7 +442,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-white rounded-lg p-6 w-full max-w-lg space-y-4">
+    <div className="bg-background rounded-lg p-6 w-full space-y-4">
       <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -460,11 +460,12 @@ function StudentView() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="border p-2 rounded w-full"
+          required
         />
       </div>
 
       {resetNotice && !playerKey && (
-        <div className="text-sm text-alert">{resetNotice}</div>
+        <div className="text-sm bg-alert">{resetNotice}</div>
       )}
 
       {gameCode && gameExists === false && (
@@ -493,8 +494,8 @@ function StudentView() {
             disabled={gameExists === false || !settings}
             className={`py-2 px-3 rounded text-white ${
               gameExists === false || !settings
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600"
+                ? "cursor-not-allowed"
+                : "cursor-allowed"
             }`}
           >
             Join
@@ -509,8 +510,8 @@ function StudentView() {
             disabled={gameExists === false || !settings}
             className={`w-full py-2 rounded text-white ${
               gameExists === false || !settings
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600"
+                ? "cursor-not-allowed"
+                : "cursor-allowed"
             }`}
           >
             Join
@@ -606,7 +607,7 @@ function StudentView() {
           )}
 
           {!gameFinished && (
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => submitChoice(0)}
                 disabled={
@@ -618,8 +619,8 @@ function StudentView() {
                 }
                 className={`py-2 rounded ${
                   isMyTurn
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-300 text-grey"
+                    ? "cursor-allowed"
+                    : "cursor-not-allowed"
                 }`}
               >
                 {settings?.labels?.[role]?.[0] ?? "Option 1"}
@@ -635,8 +636,8 @@ function StudentView() {
                 }
                 className={`py-2 rounded ${
                   isMyTurn
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-300 text-grey"
+                    ? "cursor-allowed"
+                    : "cursor-not-allowed"
                 }`}
               >
                 {settings?.labels?.[role]?.[1] ?? "Option 2"}
@@ -700,7 +701,7 @@ function StudentView() {
                     Pair {pair.index}: {pair.aName} (A) vs {pair.bName} (B)
                   </h4>
                   <table className="w-full text-xs md:text-sm border text-center">
-                    <thead className="bg-white">
+                    <thead className="bg-background">
                       <tr>
                         <th>Round</th>
                         <th>A Choice</th>
@@ -729,7 +730,7 @@ function StudentView() {
                           <td>{r.cell ? r.payoffB : "—"}</td>
                         </tr>
                       ))}
-                      <tr className="font-semibold bg-white">
+                      <tr className="font-semibold bg-background">
                         <td colSpan={4}>Totals</td>
                         <td>{pair.totalA}</td>
                         <td>{pair.totalB}</td>
@@ -756,7 +757,7 @@ function StudentView() {
 function InstructorView() {
   const [gameCode, setGameCode] = useState("");
   const [settings, setSettings] = useState({
-    assignmentMode: "choice",
+    assignmentMode: "random",
     sequential: false,
     revealPayoffs: false,
     autoProgress: false,
@@ -974,7 +975,7 @@ function InstructorView() {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 w-full max-w-3xl space-y-4">
+    <div className="bg-background shadow rounded-lg p-6 w-full space-y-4">
       <h2 className="text-lg font-bold">Instructor Dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-3">
@@ -983,19 +984,20 @@ function InstructorView() {
           onChange={(e) => setGameCode(e.target.value.trim())}
           placeholder="Game code"
           className="border p-2 rounded w-full"
+          required
         />
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <button
               onClick={startNewGame}
-              className="bg-green-600 text-white py-2 px-3 rounded flex-1"
+              className="py-2 px-3 rounded flex-1"
             >
               Start / Reset Game
             </button>
             {!settings.autoProgress && (
               <button
                 onClick={nextRoundManual}
-                className="bg-yellow-600 text-white py-2 px-3 rounded flex-1"
+                className="py-2 px-3 rounded flex-1"
               >
                 Next Round
               </button>
@@ -1007,7 +1009,7 @@ function InstructorView() {
               onClick={revealAllPayoffs}
               disabled={!gameCode}
               className={`py-2 px-3 rounded text-white ${
-                gameCode ? "bg-indigo-600" : "bg-indigo-300 cursor-not-allowed"
+                gameCode ? "cursor-allowed" : "cursor-not-allowed"
               }`}
             >
               Reveal Payoffs
@@ -1016,14 +1018,14 @@ function InstructorView() {
               onClick={resetAllUsers}
               disabled={!gameCode}
               className={`py-2 px-3 rounded text-white ${
-                gameCode ? "bg-rose-600" : "bg-rose-300 cursor-not-allowed"
+                gameCode ? "cursor-allowed" : "cursor-not-allowed"
               }`}
             >
               Reset Users
             </button>
             <button
               onClick={wipeAllGames}
-              className="py-2 px-3 rounded text-white bg-black"
+              className="py-2 px-3 rounded bg-alert"
             >
               Wipe ALL Games
             </button>

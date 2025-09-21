@@ -6,6 +6,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
+
+  --gradient--light: radial-gradient(circle at top, var(--white-00) 50%, var(--blue-g)),
+            radial-gradient(circle at bottom right, var(--offwhite), var(--cyan-l));
+  --gradient--dark: linear-gradient(to bottom, var(--colorlevel), oklch(from var(--dark) l c h / 0.5));
 }
 
 body {
@@ -15,12 +19,45 @@ body {
   display: flex;
   align-items: center;
   gap: 2rem;
+  background-color: light-dark(var(--cyan-l), var(--blue-d));
+  background-image: var(--gradient--light);
+  background-attachment: fixed;
+
+  @media (prefers-color-scheme: dark) {
+    background-image: var(--gradient--dark);
+  }
 
   > div#root {
     display: inherit;
     align-items: center;
     flex: 1;
     max-width: var(--page--narrow);
+
+    
+
+    button {
+      border: unset;
+      background-color: light-dark(var(--primary), var(--blue-g));
+      color: light-dark(var(--white), var(--blue-d));
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:is(div:has(> input:required:invalid) + div > button),
+      &.cursor-not-allowed {
+        pointer-events: none;
+        background-color: var(--grey);
+        color: var(--grey-l);
+      }
+    }
+    button:hover {
+      background-color: light-dark(var(--halflevel), var(--blue)) !important;
+    }
+    :focus,
+    :focus-visible {
+      outline: max(0.1em, 0.1rem) auto light-dark(var(--dark), var(--light));
+    }
+
   }
 
   > script {
@@ -51,7 +88,7 @@ body {
         mask-size: contain;
         mask-position: center;
         mask-repeat: no-repeat;
-        background: light-dark(var(--grey), var(--cyan));
+        background: light-dark(var(--blue-pr), var(--cyan));
         width: 1lh;
         height: 1lh;
         clip-path: circle();
@@ -137,32 +174,6 @@ body {
   }
 }
 
-
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &.cursor-not-allowed {
-    pointer-events: none;
-  }
-}
-button:hover {
-  background-color: var(--primary);
-  color: var(--white);
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
 table {
   font-variant-numeric: tabular-nums;
   > tbody {
@@ -186,36 +197,83 @@ table {
 
 
 *:not(table).playera {
-  color: var(--blue-half);
+  color: light-dark(var(--blue-half), var(--blue-g));
 }
 *:not(table).playerb {
-  color: var(--orange-half);
+  color: light-dark(var(--orange-half), var(--orange-g));
 }
 
 
-.text-blue {
-  color: var(--blue);
-}
-.text-cyan {
-  color: var(--cyan);
-}
-.text-green {
-  color: var(--green);
-}
-.text-orange {
-  color: var(--orange);
-}
-.text-red {
-  color: var(--red);
-}
-.text-violet {
-  color: var(--violet);
-}
-.text-grey {
-  color: var(--grey);
-}
-.text-alert {
-  background: var(--alert);
-  color: var(--black);
-  padding: 0.1em;
+body:is(.override) > div#root {
+ 
+  .flex {
+    gap: 1rem;
+  }
+
+  .text-blue {
+    color: var(--blue);
+  }
+  .text-cyan {
+    color: var(--cyan);
+  }
+  .text-green {
+    color: var(--green);
+  }
+  .text-orange {
+    color: var(--orange);
+  }
+  .text-red {
+    color: var(--red);
+  }
+  .text-violet {
+    color: var(--violet);
+  }
+  .text-grey {
+    color: var(--grey);
+  }
+
+  .bg-background {
+    background-color: light-dark(var(--white), var(--dark));
+  }
+  .bg-blue {
+    background: var(--blue);
+    color: var(--white);
+  }
+  .bg-cyan {
+    background: var(--cyan);
+    color: var(--white);
+  }
+  .bg-green {
+    background: var(--green);
+    color: var(--white);
+  }
+  .bg-orange {
+    background: var(--orange);
+    color: var(--white);
+  }
+  .bg-red {
+    background: var(--red);
+    color: var(--white);
+  }
+  .bg-violet {
+    background: var(--violet);
+    color: var(--white);
+  }
+  .bg-grey {
+    background: var(--grey);
+    color: var(--white);
+  }
+  .bg-alert {
+    background: var(--alert);
+    color: var(--black);
+
+    &:is(button):hover {
+      background: var(--orange-v) !important;
+      color: var(--orange-pr);
+    }
+  }
+  div[class*="bg-"]:not(.bg-background) {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-rad);
+  }
 }
