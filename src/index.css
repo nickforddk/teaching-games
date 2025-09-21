@@ -44,7 +44,7 @@ body {
 
       &::before {
         content: "";
-        mask: 
+        mask-image: 
           var(--svg--circle),
           url('data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="cutout"><rect x="0" y="0" width="100" height="100" fill = "white" /><circle cx="50" cy="85.69" r="14.31" fill="black" /></mask></defs><rect x="0" y="39.61" width="100" height="10.69" fill="black" /><rect x="0" y="39.31" width="100" height="10.69" fill="black" /><rect x="0" y="14.31" width="100" height="10.69" fill="black" /><circle cx="50" cy="85.69" r="25" fill="black" stroke="none" mask="url(%23cutout)" /></svg>');
         mask-composite: subtract;
