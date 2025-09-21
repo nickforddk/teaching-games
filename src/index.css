@@ -46,7 +46,7 @@ body {
         content: "";
         mask-image: 
           var(--svg--circle),
-          url('data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="cutout"><rect x="0" y="0" width="100" height="100" fill = "white" /><circle cx="50" cy="85.69" r="14.31" fill="black" /></mask></defs><rect x="0" y="39.61" width="100" height="10.69" fill="black" /><rect x="0" y="39.31" width="100" height="10.69" fill="black" /><rect x="0" y="14.31" width="100" height="10.69" fill="black" /><circle cx="50" cy="85.69" r="25" fill="black" stroke="none" mask="url(%23cutout)" /></svg>');
+          url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bWFzayBpZD0iY3V0b3V0Ij48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI1MCIgY3k9Ijg1LjY5IiByPSIxNC4zMSIgZmlsbD0iYmxhY2siLz48L21hc2s+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjM5LjUiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAuNjkiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMCIgeT0iMTQuMzEiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAuNjkiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI4NS42OSIgcj0iMjUiIGZpbGw9ImJsYWNrIiBtYXNrPSJ1cmwoI2N1dG91dCkiLz48L3N2Zz4=");
         mask-composite: subtract;
         mask-size: contain;
         mask-position: center;
