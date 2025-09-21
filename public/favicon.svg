@@ -1,0 +1,46 @@
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    g {
+      color-scheme: light dark;
+      --lch-l: calc(2/3);
+      --lch-c: calc(0.25);
+      --lch-h-vadj: 15;
+      --blue: oklch(var(--lch-l) var(--lch-c) 252);
+      --cyan: oklch(from var(--blue) var(--lch-l) var(--lch-c) calc(h - 60));
+      --blue-pr: oklch(from var(--blue) calc(1/3) calc(c * 2/3) h);
+      --black: oklch(from #000000 l c h);
+      --white: oklch(from #FFFFFF l c h);
+    }
+    .ncol {
+      fill: light-dark(var(--blue-pr), var(--white));
+    }
+    .fcol {
+      fill: var(--cyan);
+    }
+  </style>
+  <defs>
+    <!-- First mask: diagonal polygons only -->
+    <mask id="polygonMask" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+      <rect width="16" height="16" fill="black" />
+      <g fill="white">
+        <polygon points="0,0.8 0,16 15.2,16" />
+        <polygon points="0.8,0 16,0 16,15.2" />
+      </g>
+    </mask>
+
+    <!-- Final mask: circle AND polygonMask -->
+    <mask id="circleIntersectionMask" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+      <rect width="16" height="16" fill="black" />
+      <!-- Draw circle in white and use polygon mask to limit visibility -->
+      <circle cx="8" cy="8" r="8" fill="white" mask="url(#polygonMask)" />
+    </mask>
+  </defs>
+
+  <!-- Apply the final intersection mask to your content -->
+  <g mask="url(#circleIntersectionMask)">
+    <circle cx="2.2896" cy="13.7104" r="2.2896" class="fcol" />
+    <rect x="0" y="0" width="16" height="4.5792" class="fcol" />
+    <rect x="0" y="5.7104" width="16" height="4.5792" class="fcol" />
+    <polygon points="0,0 0,16 16,16" class="ncol" />
+  </g>
+</svg>
