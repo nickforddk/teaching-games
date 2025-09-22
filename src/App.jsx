@@ -190,7 +190,7 @@ function StudentView() {
     if (!gameCode || !settings?.rounds) return () => {};
     const compRef = ref(db, `games/${gameCode}/rounds/${settings.rounds}/completed`);
     const unsub = onValue(compRef, (snap) => setLastRoundCompleted(!!snap.val()));
-    return () => unsub;
+    return () => unsub(); // FIX: invoke cleanup
   }, [gameCode, settings?.rounds]);
 
   // Reset myChoice on round change
@@ -277,12 +277,20 @@ function StudentView() {
   };
   const displayed = getDisplayedPayoffs();
 
-  // Outcome key
-  const outcomeKey = (aChoice, bChoice) => {
+  // Map outcome (A row, B column) to original key (for payoff lookup) and a quadrant symbol for display
+  const payoffKey = (aChoice, bChoice) => {
     if (aChoice === 0 && bChoice === 0) return "CC";
     if (aChoice === 0 && bChoice === 1) return "CD";
     if (aChoice === 1 && bChoice === 0) return "DC";
     return "DD";
+  };
+  // Quadrant symbols:
+  // ▘ upper-left, ▝ upper-right, ▖ lower-left, ▗ lower-right
+  const outcomeSymbol = (aChoice, bChoice) => {
+    if (aChoice === 0 && bChoice === 0) return "▘";
+    if (aChoice === 0 && bChoice === 1) return "▝";
+    if (aChoice === 1 && bChoice === 0) return "▖";
+    return "▗";
   };
 
   // End-of-game summary
@@ -310,8 +318,9 @@ function StudentView() {
         let cell = null;
         let payoffPair = [0, 0];
         if (aC !== undefined && aC !== null && bC !== undefined && bC !== null) {
-          cell = outcomeKey(aC, bC);
-          payoffPair = payoffs[cell] || [0, 0];
+          const key = payoffKey(aC, bC);
+          cell = outcomeSymbol(aC, bC);
+          payoffPair = payoffs[key] || [0, 0];
           totalA += payoffPair[0];
           totalB += payoffPair[1];
         }
@@ -542,7 +551,7 @@ function StudentView() {
                   <h3 className="font-semibold text-center">
                     Payoffs (A,B)
                   </h3>
-                  <table className={`w-full border text-center mt-2 ${roleTableClass}`}>
+                  <table className={`w-full text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -580,7 +589,7 @@ function StudentView() {
               {displayed?.side && (
                 <div>
                   <h3 className="font-semibold text-center">Your Payoffs</h3>
-                  <table className={`w-full border text-center mt-2 ${roleTableClass}`}>
+                  <table className={`w-full text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -668,7 +677,7 @@ function StudentView() {
                   <h3 className="font-semibold text-center">
                     Full Payoff Matrix (A,B)
                   </h3>
-                  <table className={`w-full border text-center mt-2 text-sm`}>
+                  <table className={`w-full text-center mt-2 text-sm`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -695,12 +704,12 @@ function StudentView() {
               {summaryData?.pairs.map((pair) => (
                 <div
                   key={pair.index}
-                  className="border rounded p-3 bg-slate-50"
+                  className="border rounded p-3 bg-background"
                 >
                   <h4 className="font-semibold mb-2">
                     Pair {pair.index}: {pair.aName} (A) vs {pair.bName} (B)
                   </h4>
-                  <table className="w-full text-xs md:text-sm border text-center">
+                  <table className="w-full text-xs md:text-sm text-center">
                     <thead className="bg-background">
                       <tr>
                         <th>Round</th>
@@ -725,7 +734,13 @@ function StudentView() {
                               ? choiceLabel("B", r.bChoice)
                               : "—"}
                           </td>
-                          <td>{r.cell || "—"}</td>
+                          <td>
+                            {r.cell ? (
+                              <span className="outcome-symbol">{r.cell}</span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
                           <td>{r.cell ? r.payoffA : "—"}</td>
                           <td>{r.cell ? r.payoffB : "—"}</td>
                         </tr>
@@ -1100,7 +1115,8 @@ function InstructorView() {
 
         <div>
           <h3 className="font-semibold">Strategy Labels</h3>
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            <div>Player A</div>
             <input
               value={settings.labels.A[0]}
               onChange={(e) =>
@@ -1125,6 +1141,7 @@ function InstructorView() {
               }
               className="border p-2 rounded"
             />
+            <div>Player B</div>
             <input
               value={settings.labels.B[0]}
               onChange={(e) =>
@@ -1155,7 +1172,7 @@ function InstructorView() {
 
       <div>
         <h3 className="font-semibold">Payoff matrix (A,B)</h3>
-        <table className="w-full border text-center mt-2">
+        <table className="w-full text-center mt-2">
           <thead>
             <tr>
               <th></th>
@@ -1235,13 +1252,13 @@ function InstructorView() {
           <div>
             <strong>Current round snapshot:</strong>
           </div>
-          <pre className="bg-slate-50 p-2 rounded max-h-48 overflow-auto">
+          <pre className="bg-background p-2 rounded max-h-48 overflow-auto">
             {JSON.stringify(roundSnapshot, null, 2)}
           </pre>
           <div>
             <strong>Full games/{gameCode} node:</strong>
           </div>
-          <pre className="bg-slate-50 p-2 rounded max-h-64 overflow-auto">
+          <pre className="bg-background p-2 rounded max-h-64 overflow-auto">
             {JSON.stringify(fullGameSnapshot, null, 2)}
           </pre>
         </div>

@@ -7,9 +7,14 @@
   -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
 
-  --gradient--light: radial-gradient(circle at top, var(--white-00) 50%, var(--blue-g)),
+  --gradient--light: 
+            linear-gradient(to top, var(--white), var(--white-00) 50%),
+            radial-gradient(circle at top, var(--white-00) 50%, var(--blue-g)),
             radial-gradient(circle at bottom right, var(--offwhite), var(--cyan-l));
-  --gradient--dark: linear-gradient(to bottom, var(--colorlevel), oklch(from var(--dark) l c h / 0.5));
+  --gradient--dark: 
+            linear-gradient(to top, var(--dark), var(--white-00) 50%),
+            radial-gradient(circle at top, var(--white-00) 50%, var(--cyan-pr)),
+            radial-gradient(circle at bottom right, var(--offblack), var(--blue-d));
 }
 
 body {
@@ -19,7 +24,7 @@ body {
   display: flex;
   align-items: center;
   gap: 2rem;
-  background-color: light-dark(var(--cyan-l), var(--blue-d));
+  background-color: light-dark(var(--white), var(--dark));
   background-image: var(--gradient--light);
   background-attachment: fixed;
 
@@ -203,6 +208,20 @@ table {
   color: light-dark(var(--orange-half), var(--orange-g));
 }
 
+.outcome-symbol {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1lh;
+  height: 1lh;
+  font-size: var(--font-size--fineprint);
+  border: max(0.1rem, 0.1em) solid;
+  border-radius: var(--border-rad);
+  padding: max(0.1rem, 0.1em);
+  line-height: 1.5;
+  margin: max(0.1rem, 0.1em);
+}
+
 
 body:is(.override) > div#root {
  
@@ -232,8 +251,20 @@ body:is(.override) > div#root {
     color: var(--grey);
   }
 
+  .border {
+    border-width: max(0.1rem, 0.1em);
+  }
+
   .bg-background {
     background-color: light-dark(var(--white), var(--dark));
+
+    .bg-background {
+      background-color: light-dark(var(--offwhite), var(--colorlevel));
+
+      .bg-background {
+        background-color: light-dark(var(--white-50), var(--black-50));
+      }
+    }
   }
   .bg-blue {
     background: var(--blue);
