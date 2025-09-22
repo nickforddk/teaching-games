@@ -704,7 +704,7 @@ function StudentView() {
               {summaryData?.pairs.map((pair) => (
                 <div
                   key={pair.index}
-                  className="border rounded p-3 bg-background"
+                  className="rounded p-3 bg-toned"
                 >
                   <h4 className="font-semibold mb-2">
                     Pair {pair.index}: {pair.aName} (A) vs {pair.bName} (B)

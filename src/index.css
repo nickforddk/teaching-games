@@ -257,14 +257,9 @@ body:is(.override) > div#root {
 
   .bg-background {
     background-color: light-dark(var(--white), var(--dark));
-
-    .bg-background {
-      background-color: light-dark(var(--offwhite), var(--colorlevel));
-
-      .bg-background {
-        background-color: light-dark(var(--white-50), var(--black-50));
-      }
-    }
+  }
+  .bg-toned {
+    background-color: light-dark(var(--cyan-l), var(--colorlevel));
   }
   .bg-blue {
     background: var(--blue);
