@@ -2998,11 +2998,14 @@ body {
         font-family: inherit;
         font-size: inherit;
         line-height: inherit;
-        padding: var(--border-weight);
         box-sizing: border-box;
         display: inline-block;
         transition: all 0.2s ease;
         border-radius: var(--border-rad--constant);
+
+        &:not(button) {
+            padding: var(--border-weight);
+        }
     }
 
     :has(> :is(button, input, optgroup, select, textarea):required:invalid):not(:hover, :focus, :focus-within) {

@@ -92,6 +92,7 @@ function StudentView() {
         rounds: 1,
         currentRound: 1,
         labels: { A: ["Cooperate", "Defect"], B: ["Cooperate", "Defect"] },
+        minOpenSeconds: 10, // NEW
       };
       setSettings({ ...defaults, ...raw });
       if (raw?.currentRound) setCurrentRound(raw.currentRound);
@@ -350,6 +351,16 @@ function StudentView() {
   // Mark round completion
   const checkAndMarkRoundCompleted = async (code, R) => {
     try {
+      const settingsSnap = await get(ref(db, `games/${code}/settings`));
+      const sObj = settingsSnap.val() || {};
+      const minSecs = sObj.minOpenSeconds ?? 10;
+      const roundMetaSnap = await get(ref(db, `games/${code}/rounds/${R}/startedAt`));
+      const startedAt = roundMetaSnap.val();
+      if (startedAt && Date.now() - startedAt < minSecs * 1000) {
+        // Too early to mark this round completed
+        return;
+      }
+
       const playersSnap = await get(ref(db, `games/${code}/players`));
       const playersObj = playersSnap.val() || {};
       const Aglobal_local = Object.entries(playersObj)
@@ -501,7 +512,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`py-2 px-3 rounded text-white ${
+            className={`py-4 px-2 rounded text-white ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -517,7 +528,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`w-full py-2 rounded text-white ${
+            className={`w-full py-4 px-2 rounded text-white ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -626,7 +637,7 @@ function StudentView() {
                   myChoice === 1 ||
                   currentRound > (settings?.rounds || 1)
                 }
-                className={`py-2 rounded ${
+                className={`py-4 px-2 rounded ${
                   isMyTurn
                     ? "cursor-allowed"
                     : "cursor-not-allowed"
@@ -643,7 +654,7 @@ function StudentView() {
                   myChoice === 1 ||
                   currentRound > (settings?.rounds || 1)
                 }
-                className={`py-2 rounded ${
+                className={`py-4 px-2 rounded ${
                   isMyTurn
                     ? "cursor-allowed"
                     : "cursor-not-allowed"
@@ -793,6 +804,7 @@ function InstructorView() {
     rounds: 1,
     currentRound: 1,
     labels: { A: ["Cooperate", "Defect"], B: ["Cooperate", "Defect"] },
+    minOpenSeconds: 10, // NEW
   });
   const [payoffs, setPayoffs] = useState({
     CC: [3, 3],
@@ -812,13 +824,14 @@ function InstructorView() {
     const unsubS = onValue(sRef, (snap) => {
       const raw = snap.val() || {};
       const defaults = {
-        assignmentMode: "choice",
+        assignmentMode: "random",
         sequential: false,
         revealPayoffs: false,
         autoProgress: false,
         rounds: 1,
         currentRound: 1,
         labels: { A: ["Cooperate", "Defect"], B: ["Cooperate", "Defect"] },
+        minOpenSeconds: 10, // NEW
       };
       setSettings({ ...defaults, ...raw });
     });
@@ -881,7 +894,17 @@ function InstructorView() {
           if (cur === settings.currentRound && cur < (settings.rounds || 1))
             return cur + 1;
           return;
-        }).catch((e) => console.error("runTransaction error", e));
+        })
+          .then(async (res) => {
+            if (res.committed) {
+              const newVal = res.snapshot.val();
+              if (newVal && newVal !== settings.currentRound) {
+                // NEW: set startedAt for the new round
+                await set(ref(db, `games/${gameCode}/rounds/${newVal}/startedAt`), Date.now());
+              }
+            }
+          })
+          .catch((e) => console.error("runTransaction error", e));
       }
       prevCompletedRef.current = !!val;
     });
@@ -918,6 +941,8 @@ function InstructorView() {
       const sToWrite = { ...settings, currentRound: 1 };
       await set(ref(db, `games/${gameCode}/settings`), sToWrite);
       await set(ref(db, `games/${gameCode}/payoffs`), payoffs);
+      // NEW: record round 1 start time
+      await set(ref(db, `games/${gameCode}/rounds/1/startedAt`), Date.now());
       setSettings((s) => ({ ...s, currentRound: 1 }));
       setPlayers([]);
       setRoundSnapshot({});
@@ -936,6 +961,7 @@ function InstructorView() {
     const next = cur + 1;
     try {
       await update(ref(db, `games/${gameCode}/settings`), { currentRound: next });
+      await set(ref(db, `games/${gameCode}/rounds/${next}/startedAt`), Date.now()); // NEW
       setSettings((s) => ({ ...s, currentRound: next }));
     } catch (e) {
       console.error(e);
@@ -1007,15 +1033,15 @@ function InstructorView() {
     <div className="bg-background shadow rounded-lg p-6 w-full space-y-4">
       <h2 className="text-lg font-bold">Instructor Dashboard</h2>
 
-      <div className="grid md:grid-cols-2 gap-3">
-        <input
-          value={gameCode}
-          onChange={(e) => setGameCode(e.target.value.trim())}
-          placeholder="Game code"
-          className="border p-2 rounded w-full"
-          required
-        />
+      <div className="grid md:grid-cols-2 gap-2">
         <div className="flex flex-col gap-2">
+          <input
+            value={gameCode}
+            onChange={(e) => setGameCode(e.target.value.trim())}
+            placeholder="Game code"
+            className="border p-2 rounded w-full"
+            required
+          />
           <div className="flex gap-2">
             <button
               onClick={startNewGame}
@@ -1032,33 +1058,32 @@ function InstructorView() {
               </button>
             )}
           </div>
-          {/* NEW admin action buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={revealAllPayoffs}
-              disabled={!gameCode}
-              className={`py-2 px-3 rounded text-white ${
-                gameCode ? "cursor-allowed" : "cursor-not-allowed"
-              }`}
-            >
-              Reveal Payoffs
-            </button>
-            <button
-              onClick={resetAllUsers}
-              disabled={!gameCode}
-              className={`py-2 px-3 rounded text-white ${
-                gameCode ? "cursor-allowed" : "cursor-not-allowed"
-              }`}
-            >
-              Reset Users
-            </button>
-            <button
-              onClick={wipeAllGames}
-              className="py-2 px-3 rounded bg-alert"
-            >
-              Wipe ALL Games
-            </button>
-          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={revealAllPayoffs}
+            disabled={!gameCode}
+            className={`py-2 px-3 rounded text-white ${
+              gameCode ? "cursor-allowed" : "cursor-not-allowed"
+            }`}
+          >
+            Reveal Payoffs
+          </button>
+          <button
+            onClick={resetAllUsers}
+            disabled={!gameCode}
+            className={`py-2 px-3 rounded text-white ${
+              gameCode ? "cursor-allowed" : "cursor-not-allowed"
+            }`}
+          >
+            Reset Users
+          </button>
+          <button
+            onClick={wipeAllGames}
+            className="py-2 px-3 rounded bg-alert"
+          >
+            Wipe ALL Games
+          </button>
         </div>
       </div>
 
@@ -1108,23 +1133,7 @@ function InstructorView() {
             />{" "}
             Automatic round progression?
           </label>
-          <label className="block mt-2">
-            Rounds:{" "}
-            <input
-              type="number"
-              min={1}
-              value={settings.rounds}
-              onChange={(e) =>
-                updateSettings({
-                  rounds: Math.max(1, parseInt(e.target.value || 1)),
-                })
-              }
-              className="border p-1 ml-2 w-24 rounded"
-            />
-          </label>
-          <p className="text-sm mt-2">
-            Current round: {settings.currentRound} / {settings.rounds}
-          </p>
+          
         </div>
 
         <div>
@@ -1181,6 +1190,49 @@ function InstructorView() {
               className="border p-2 rounded"
             />
           </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-2 mt-2">
+        <h3 className="font-semibold col-span-full">Rounds</h3>
+        <div>
+          <label className="block mt-2">
+            Rounds:{" "}
+            <input
+              type="number"
+              min={1}
+              value={settings.rounds}
+              onChange={(e) =>
+                updateSettings({
+                  rounds: Math.max(1, parseInt(e.target.value || 1)),
+                })
+              }
+              className="border p-1 ml-2 w-24 rounded"
+            />
+          </label>
+          <p className="text-sm mt-2">
+            Current round: {settings.currentRound} / {settings.rounds}
+          </p>
+        </div>
+        
+        <div>
+          <label className="block mt-2">
+            Minimum time:{" "}
+            <input
+              type="number"
+              min={0}
+              value={settings.minOpenSeconds ?? 10}
+              onChange={(e) =>
+                updateSettings({
+                  minOpenSeconds: Math.max(0, parseInt(e.target.value || 0)),
+                })
+              }
+              className="border p-1 ml-2 w-24 rounded"
+            />
+          </label>
+          <p className="text-sm mt-2">
+            Time given in seconds. A round cannot complete (and auto-progress) before this time elapses.
+          </p>
         </div>
       </div>
 

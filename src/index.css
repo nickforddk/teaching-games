@@ -233,10 +233,7 @@ table.border-separate {
 
 
 body:is(.override) > div#root {
- 
-  .flex {
-    gap: 1rem;
-  }
+  --spacing: 0.25rem;
 
   .text-blue {
     color: var(--blue);
