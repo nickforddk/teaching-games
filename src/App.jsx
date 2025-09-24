@@ -1100,7 +1100,7 @@ function InstructorView() {
               className="border p-2 rounded w-full mt-1"
             >
               <option value="choice">Students choose</option>
-              <option value="random">Random assignment</option>
+              <option value="random">Automatic assignment</option>
             </select>
           </label>
           <label className="block mt-2">
@@ -1298,10 +1298,10 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="font-semibold">
+        <h3 className="font-semibold mb-2">
           Players joined ({players.length})
         </h3>
-        <ul className="list-disc list-inside">
+        <ul className="list-disc list-inside text-base">
           {players.map((p) => (
             <li key={p.key}>
               {p.name} ({p.role}) — id:{" "}
