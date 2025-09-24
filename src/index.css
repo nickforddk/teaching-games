@@ -305,7 +305,6 @@ body:is(.override) > div#root {
     }
   }
   div[class*="bg-"]:not(.bg-background) {
-    padding: 0.5rem 1rem;
     border-radius: var(--border-rad);
   }
 

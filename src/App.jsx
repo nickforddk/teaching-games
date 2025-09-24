@@ -462,7 +462,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background rounded-lg p-6 md:p-8 w-full space-y-8">
+    <div className="bg-background rounded-lg p-6 md:p-8 w-full space-y-4">
       <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -485,7 +485,7 @@ function StudentView() {
       </div>
 
       {resetNotice && !playerKey && (
-        <div className="text-sm bg-alert">{resetNotice}</div>
+        <div className="text-sm bg-alert p-2">{resetNotice}</div>
       )}
 
       {gameCode && gameExists === false && (
@@ -680,7 +680,7 @@ function StudentView() {
 
           {gameFinished && (
             <div className="mt-6 space-y-4">
-              <div className="text-center text-xl font-bold bg-cyan">
+              <div className="text-center text-2xl py-4 px-2 font-bold bg-cyan">
                 Game over!
               </div>
               {payoffs && (
@@ -729,9 +729,9 @@ function StudentView() {
                    return (
                      <div
                        key={`${p.index}-${isMine ? 'mine' : 'other'}`}
-                       className={`rounded p-3 ${isMine ? "bg-blue" : "bg-toned"}`}
+                       className={`rounded p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
                      >
-                       <h4 className="font-semibold mb-2">{heading}</h4>
+                       <h4 className="font-semibold mb-4">{heading}</h4>
                        <table className="w-full text-xs md:text-sm text-center">
                          <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
                            <tr>
