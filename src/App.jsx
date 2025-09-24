@@ -1089,7 +1089,7 @@ function InstructorView() {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <h3 className="font-semibold">Game Settings</h3>
+          <h3 className="font-semibold">Game settings</h3>
           <label className="block mt-2">
             Assignment:
             <select
@@ -1099,8 +1099,8 @@ function InstructorView() {
               }
               className="border p-2 rounded w-full mt-1"
             >
-              <option value="choice">Students choose</option>
               <option value="random">Automatic assignment</option>
+              <option value="choice">Students choose</option>
             </select>
           </label>
           <label className="block mt-2">
@@ -1182,74 +1182,57 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="font-semibold">Strategy Labels</h3>
-        <div className="grid grid-cols-3 gap-2 mt-2">
-          <div className="flex items-center justify-start">Player A</div>
-          <input
-            value={settings.labels.A[0]}
-            onChange={(e) =>
-              updateSettings({
-                labels: {
-                  ...settings.labels,
-                  A: [e.target.value, settings.labels.A[1]],
-                },
-              })
-            }
-            className="border p-2 rounded"
-          />
-          <input
-            value={settings.labels.A[1]}
-            onChange={(e) =>
-              updateSettings({
-                labels: {
-                  ...settings.labels,
-                  A: [settings.labels.A[0], e.target.value],
-                },
-              })
-            }
-            className="border p-2 rounded"
-          />
-          <div className="flex items-center justify-start">Player B</div>
-          <input
-            value={settings.labels.B[0]}
-            onChange={(e) =>
-              updateSettings({
-                labels: {
-                  ...settings.labels,
-                  B: [e.target.value, settings.labels.B[1]],
-                },
-              })
-            }
-            className="border p-2 rounded"
-          />
-          <input
-            value={settings.labels.B[1]}
-            onChange={(e) =>
-              updateSettings({
-                labels: {
-                  ...settings.labels,
-                  B: [settings.labels.B[0], e.target.value],
-                },
-              })
-            }
-            className="border p-2 rounded"
-          />
-        </div>
-      </div>
-
-      <div>
         <h3 className="font-semibold">Payoff matrix (A,B)</h3>
         <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>
               <th className="w-1/3"></th>
-              <th className="w-1/3">B: {settings.labels.B[0]}</th>
-              <th className="w-1/3">B: {settings.labels.B[1]}</th>
+              <th className="w-1/3">
+                <input
+                  value={settings.labels.B[0]}
+                  onChange={(e) =>
+                    updateSettings({
+                      labels: {
+                        ...settings.labels,
+                        B: [e.target.value, settings.labels.B[1]],
+                      },
+                    })
+                  }
+                  className="border p-1 text-center rounded w-1/1"
+                />
+              </th>
+              <th className="w-1/3">
+                <input
+                  value={settings.labels.B[1]}
+                  onChange={(e) =>
+                    updateSettings({
+                      labels: {
+                        ...settings.labels,
+                        B: [settings.labels.B[0], e.target.value],
+                      },
+                    })
+                  }
+                  className="border p-1 text-center rounded w-1/1"
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>A: {settings.labels.A[0]}</td>
+              <td>
+                <input
+                  value={settings.labels.A[0]}
+                  onChange={(e) =>
+                    updateSettings({
+                      labels: {
+                        ...settings.labels,
+                        A: [e.target.value, settings.labels.A[1]],
+                      },
+                    })
+                  }
+                  className="border p-1 text-center rounded w-1/1"
+                />
+              </td>
               <td>
                 <input
                   className="border p-1 text-center rounded w-1/1"
@@ -1270,7 +1253,20 @@ function InstructorView() {
               </td>
             </tr>
             <tr>
-              <td>A: {settings.labels.A[1]}</td>
+              <td>
+                <input
+                  value={settings.labels.A[1]}
+                  onChange={(e) =>
+                    updateSettings({
+                      labels: {
+                        ...settings.labels,
+                        A: [settings.labels.A[0], e.target.value],
+                      },
+                    })
+                  }
+                  className="border p-1 text-center rounded w-1/1"
+                />
+              </td>
               <td>
                 <input
                   className="border p-1 text-center rounded w-1/1"
