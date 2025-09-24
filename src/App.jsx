@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { initializeApp } from "firebase/app";
 import {
   getDatabase,
@@ -588,7 +588,7 @@ function StudentView() {
               )}
               {displayed?.side && (
                 <div>
-                  <h3 className="font-semibold text-center">Your Payoffs</h3>
+                  <h3 className="font-semibold text-center">Your payoffs</h3>
                   <table className={`w-full text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
@@ -669,13 +669,13 @@ function StudentView() {
 
           {gameFinished && (
             <div className="mt-6 space-y-4">
-              <div className="text-center text-xl font-bold text-green">
-                ✅ Game Completed – Summary
+              <div className="text-center text-xl font-bold bg-cyan">
+                Game over!
               </div>
               {payoffs && (
                 <div>
                   <h3 className="font-semibold text-center">
-                    Full Payoff Matrix (A,B)
+                    Payoff matrix (A,B)
                   </h3>
                   <table className={`w-full text-center mt-2 text-sm`}>
                     <thead>
@@ -701,59 +701,73 @@ function StudentView() {
                 </div>
               )}
 
-              {summaryData?.pairs.map((pair) => (
-                <div
-                  key={pair.index}
-                  className="rounded p-3 bg-toned"
-                >
-                  <h4 className="font-semibold mb-2">
-                    Pair {pair.index}: {pair.aName} (A) vs {pair.bName} (B)
-                  </h4>
-                  <table className="w-full text-xs md:text-sm text-center">
-                    <thead className="bg-background">
-                      <tr>
-                        <th>Round</th>
-                        <th>A Choice</th>
-                        <th>B Choice</th>
-                        <th>Outcome</th>
-                        <th>Payoff A</th>
-                        <th>Payoff B</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pair.rounds.map((r) => (
-                        <tr key={r.round}>
-                          <td>{r.round}</td>
-                          <td>
-                            {r.aChoice === 0 || r.aChoice === 1
-                              ? choiceLabel("A", r.aChoice)
-                              : "—"}
-                          </td>
-                          <td>
-                            {r.bChoice === 0 || r.bChoice === 1
-                              ? choiceLabel("B", r.bChoice)
-                              : "—"}
-                          </td>
-                          <td>
-                            {r.cell ? (
-                              <span className="outcome-symbol">{r.cell}</span>
-                            ) : (
-                              "—"
-                            )}
-                          </td>
-                          <td>{r.cell ? r.payoffA : "—"}</td>
-                          <td>{r.cell ? r.payoffB : "—"}</td>
-                        </tr>
-                      ))}
-                      <tr className="font-semibold bg-background">
-                        <td colSpan={4}>Totals</td>
-                        <td>{pair.totalA}</td>
-                        <td>{pair.totalB}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              ))}
+               {(() => {
+                 if (!summaryData) return null;
+                 // Reorder so the current player's pair (if any) comes first
+                 const ordered = [];
+                 const others = [];
+                 summaryData.pairs.forEach(p => {
+                   if (p.aKey === playerKey || p.bKey === playerKey) ordered.push(p);
+                   else others.push(p);
+                 });
+                 const finalList = [...ordered, ...others];
+                 let otherCounter = 1;
+                 return finalList.map(p => {
+                   const isMine = p.aKey === playerKey || p.bKey === playerKey;
+                   const heading = isMine ? `Your pair: ${p.aName} (A) vs ${p.bName} (B)` : `Pair ${otherCounter++}`;
+                   return (
+                     <div
+                       key={`${p.index}-${isMine ? 'mine' : 'other'}`}
+                       className={`rounded p-3 ${isMine ? "bg-blue" : "bg-toned"}`}
+                     >
+                       <h4 className="font-semibold mb-2">{heading}</h4>
+                       <table className="w-full text-xs md:text-sm text-center">
+                         <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
+                           <tr>
+                             <th>Round</th>
+                             <th>A's choice</th>
+                             <th>B's choice</th>
+                             <th>Quadrant</th>
+                             <th>A's payoff</th>
+                             <th>B's payoff</th>
+                           </tr>
+                         </thead>
+                         <tbody>
+                           {p.rounds.map(r => (
+                             <tr key={r.round}>
+                               <td>{r.round}</td>
+                               <td>
+                                 {r.aChoice === 0 || r.aChoice === 1
+                                   ? choiceLabel("A", r.aChoice)
+                                   : "—"}
+                               </td>
+                               <td>
+                                 {r.bChoice === 0 || r.bChoice === 1
+                                   ? choiceLabel("B", r.bChoice)
+                                   : "—"}
+                               </td>
+                               <td>
+                                 {r.cell ? (
+                                   <span className="outcome-symbol">{r.cell}</span>
+                                 ) : (
+                                   "—"
+                                 )}
+                               </td>
+                               <td>{r.cell ? r.payoffA : "—"}</td>
+                               <td>{r.cell ? r.payoffB : "—"}</td>
+                             </tr>
+                           ))}
+                           <tr className={`font-semibold bg-background ${isMine ? "text-blue" : ""}`}>
+                             <td colSpan={4}>Totals</td>
+                             <td>{p.totalA}</td>
+                             <td>{p.totalB}</td>
+                           </tr>
+                         </tbody>
+                       </table>
+                     </div>
+                   );
+                 });
+               })()}
 
               {summaryData?.pairs.length === 0 && (
                 <div className="text-sm text-center text-grey">
@@ -1116,7 +1130,7 @@ function InstructorView() {
         <div>
           <h3 className="font-semibold">Strategy Labels</h3>
           <div className="grid grid-cols-3 gap-2 mt-2">
-            <div>Player A</div>
+            <div className="flex items-center justify-start">Player A</div>
             <input
               value={settings.labels.A[0]}
               onChange={(e) =>
@@ -1141,7 +1155,7 @@ function InstructorView() {
               }
               className="border p-2 rounded"
             />
-            <div>Player B</div>
+            <div className="flex items-center justify-start">Player B</div>
             <input
               value={settings.labels.B[0]}
               onChange={(e) =>
@@ -1172,7 +1186,7 @@ function InstructorView() {
 
       <div>
         <h3 className="font-semibold">Payoff matrix (A,B)</h3>
-        <table className="w-full text-center mt-2">
+        <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>
               <th></th>
@@ -1185,7 +1199,7 @@ function InstructorView() {
               <td>A: {settings.labels.A[0]}</td>
               <td>
                 <input
-                  className="border p-1 w-28 text-center rounded"
+                  className="border p-1 w-24 text-center rounded"
                   value={pairToStr(payoffs.CC)}
                   onChange={(e) =>
                     updatePayoffCell("CC", parsePair(e.target.value))
@@ -1194,7 +1208,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 w-28 text-center rounded"
+                  className="border p-1 w-24 text-center rounded"
                   value={pairToStr(payoffs.CD)}
                   onChange={(e) =>
                     updatePayoffCell("CD", parsePair(e.target.value))
@@ -1206,7 +1220,7 @@ function InstructorView() {
               <td>A: {settings.labels.A[1]}</td>
               <td>
                 <input
-                  className="border p-1 w-28 text-center rounded"
+                  className="border p-1 w-24 text-center rounded"
                   value={pairToStr(payoffs.DC)}
                   onChange={(e) =>
                     updatePayoffCell("DC", parsePair(e.target.value))
@@ -1215,7 +1229,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 w-28 text-center rounded"
+                  className="border p-1 w-24 text-center rounded"
                   value={pairToStr(payoffs.DD)}
                   onChange={(e) =>
                     updatePayoffCell("DD", parsePair(e.target.value))
