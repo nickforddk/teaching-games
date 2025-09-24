@@ -462,7 +462,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background rounded-lg p-6 md:p-8 w-full space-y-4">
+    <div className="bg-background shadow rounded-lg p-6 md:p-8 w-full space-y-4">
       <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -688,7 +688,7 @@ function StudentView() {
                   <h3 className="font-semibold text-center">
                     Payoff matrix (A,B)
                   </h3>
-                  <table className={`w-full text-center mt-2 text-sm`}>
+                  <table className={`w-full text-center mt-2 text-base`}>
                     <thead>
                       <tr>
                         <th></th>
@@ -732,7 +732,7 @@ function StudentView() {
                        className={`rounded p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
                      >
                        <h4 className="font-semibold mb-4">{heading}</h4>
-                       <table className="w-full text-xs md:text-sm text-center">
+                       <table className="w-full text-xs md:text-sm text-center table-p-1">
                          <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
                            <tr>
                              <th>Round</th>

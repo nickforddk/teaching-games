@@ -265,7 +265,7 @@ body:is(.override) > div#root {
     background-color: light-dark(var(--white), var(--dark));
   }
   .bg-toned {
-    background-color: light-dark(var(--cyan-l), var(--colorlevel));
+    background-color: light-dark(var(--blue-l), var(--colorlevel));
   }
   .bg-blue {
     background: var(--blue);
@@ -308,4 +308,13 @@ body:is(.override) > div#root {
     border-radius: var(--border-rad);
   }
 
+  table.table-p-1 :where(th, td) {
+    padding: calc(var(--spacing) * 1);
+  }
+  table.table-p-2 :where(th, td) {
+    padding: calc(var(--spacing) * 2);
+  }
+  table.table-p-3 :where(th, td) {
+    padding: calc(var(--spacing) * 3);
+  }
 }
