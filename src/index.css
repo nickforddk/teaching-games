@@ -308,4 +308,5 @@ body:is(.override) > div#root {
     padding: 0.5rem 1rem;
     border-radius: var(--border-rad);
   }
+
 }

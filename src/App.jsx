@@ -40,7 +40,7 @@ export default function App() {
   const params = new URLSearchParams(window.location.search);
   const isAdmin = (params.get("user") || "").toLowerCase() === "admin";
   return (
-    <div className="flex items-start justify-center p-6">
+    <div className="flex items-start justify-center p-4">
       {isAdmin ? <InstructorView /> : <StudentView />}
     </div>
   );
@@ -462,7 +462,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background rounded-lg p-6 w-full space-y-4">
+    <div className="bg-background rounded-lg p-8 w-full space-y-8">
       <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -1030,8 +1030,8 @@ function InstructorView() {
   };
 
   return (
-    <div className="bg-background shadow rounded-lg p-6 w-full space-y-4">
-      <h2 className="text-lg font-bold">Instructor Dashboard</h2>
+    <div className="bg-background shadow rounded-lg p-8 w-full space-y-8">
+      <h2 className="text-lg font-bold">Instructor dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
         <div className="flex flex-col gap-2">
