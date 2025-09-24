@@ -1139,7 +1139,7 @@ function InstructorView() {
         <div>
           <h3 className="font-semibold col-span-full">Rounds</h3>
           <div>
-            <label className="block mt-2">
+            <label className="flex items-center justify-start mt-2">
               Rounds:{" "}
               <input
                 type="number"
@@ -1159,7 +1159,7 @@ function InstructorView() {
           </div>
           
           <div>
-            <label className="block mt-2">
+            <label className="flex items-center justify-start mt-2">
               Minimum time:{" "}
               <input
                 type="number"
