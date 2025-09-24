@@ -40,7 +40,7 @@ export default function App() {
   const params = new URLSearchParams(window.location.search);
   const isAdmin = (params.get("user") || "").toLowerCase() === "admin";
   return (
-    <div className="flex items-start justify-center p-4">
+    <div className="flex items-start justify-center md:p-4">
       {isAdmin ? <InstructorView /> : <StudentView />}
     </div>
   );
@@ -462,7 +462,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background rounded-lg p-8 w-full space-y-8">
+    <div className="bg-background rounded-lg p-6 md:p-8 w-full space-y-8">
       <h2 className="text-lg font-bold text-center">Want to play?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -1030,7 +1030,7 @@ function InstructorView() {
   };
 
   return (
-    <div className="bg-background shadow rounded-lg p-8 w-full space-y-8">
+    <div className="bg-background shadow rounded-lg p-6 md:p-8 w-full space-y-8">
       <h2 className="text-lg font-bold">Instructor dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
@@ -1045,16 +1045,16 @@ function InstructorView() {
           <div className="flex gap-2">
             <button
               onClick={startNewGame}
-              className="py-2 px-3 rounded flex-1"
+              className="py-4 px-3 rounded flex-1"
             >
-              Start / Reset Game
+              Start / reset game
             </button>
             {!settings.autoProgress && (
               <button
                 onClick={nextRoundManual}
-                className="py-2 px-3 rounded flex-1"
+                className="py-4 px-3 rounded flex-1"
               >
-                Next Round
+                Next round
               </button>
             )}
           </div>
@@ -1063,26 +1063,26 @@ function InstructorView() {
           <button
             onClick={revealAllPayoffs}
             disabled={!gameCode}
-            className={`py-2 px-3 rounded text-white ${
+            className={`py-4 px-3 rounded text-white ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
           >
-            Reveal Payoffs
+            Reveal payoffs
           </button>
           <button
             onClick={resetAllUsers}
             disabled={!gameCode}
-            className={`py-2 px-3 rounded text-white ${
+            className={`py-4 px-3 rounded text-white ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
           >
-            Reset Users
+            Reset users
           </button>
           <button
             onClick={wipeAllGames}
-            className="py-2 px-3 rounded bg-alert"
+            className="py-4 px-3 rounded bg-alert"
           >
-            Wipe ALL Games
+            Wipe <strong>ALL</strong> games
           </button>
         </div>
       </div>
@@ -1137,102 +1137,103 @@ function InstructorView() {
         </div>
 
         <div>
-          <h3 className="font-semibold">Strategy Labels</h3>
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            <div className="flex items-center justify-start">Player A</div>
-            <input
-              value={settings.labels.A[0]}
-              onChange={(e) =>
-                updateSettings({
-                  labels: {
-                    ...settings.labels,
-                    A: [e.target.value, settings.labels.A[1]],
-                  },
-                })
-              }
-              className="border p-2 rounded"
-            />
-            <input
-              value={settings.labels.A[1]}
-              onChange={(e) =>
-                updateSettings({
-                  labels: {
-                    ...settings.labels,
-                    A: [settings.labels.A[0], e.target.value],
-                  },
-                })
-              }
-              className="border p-2 rounded"
-            />
-            <div className="flex items-center justify-start">Player B</div>
-            <input
-              value={settings.labels.B[0]}
-              onChange={(e) =>
-                updateSettings({
-                  labels: {
-                    ...settings.labels,
-                    B: [e.target.value, settings.labels.B[1]],
-                  },
-                })
-              }
-              className="border p-2 rounded"
-            />
-            <input
-              value={settings.labels.B[1]}
-              onChange={(e) =>
-                updateSettings({
-                  labels: {
-                    ...settings.labels,
-                    B: [settings.labels.B[0], e.target.value],
-                  },
-                })
-              }
-              className="border p-2 rounded"
-            />
+          <h3 className="font-semibold col-span-full">Rounds</h3>
+          <div>
+            <label className="block mt-2">
+              Rounds:{" "}
+              <input
+                type="number"
+                min={1}
+                value={settings.rounds}
+                onChange={(e) =>
+                  updateSettings({
+                    rounds: Math.max(1, parseInt(e.target.value || 1)),
+                  })
+                }
+                className="border p-1 ml-2 w-24 rounded"
+              />
+            </label>
+            <p className="text-sm mt-2">
+              Current round: {settings.currentRound} / {settings.rounds}
+            </p>
+          </div>
+          
+          <div>
+            <label className="block mt-2">
+              Minimum time:{" "}
+              <input
+                type="number"
+                min={0}
+                value={settings.minOpenSeconds ?? 10}
+                onChange={(e) =>
+                  updateSettings({
+                    minOpenSeconds: Math.max(0, parseInt(e.target.value || 0)),
+                  })
+                }
+                className="border p-1 ml-2 w-24 rounded"
+              />
+            </label>
+            <p className="text-sm mt-2">
+              Time given in seconds. A round cannot complete (and auto-progress) before this time elapses.
+            </p>
           </div>
         </div>
+        
       </div>
 
-      <div className="grid md:grid-cols-2 gap-2 mt-2">
-        <h3 className="font-semibold col-span-full">Rounds</h3>
-        <div>
-          <label className="block mt-2">
-            Rounds:{" "}
-            <input
-              type="number"
-              min={1}
-              value={settings.rounds}
-              onChange={(e) =>
-                updateSettings({
-                  rounds: Math.max(1, parseInt(e.target.value || 1)),
-                })
-              }
-              className="border p-1 ml-2 w-24 rounded"
-            />
-          </label>
-          <p className="text-sm mt-2">
-            Current round: {settings.currentRound} / {settings.rounds}
-          </p>
-        </div>
-        
-        <div>
-          <label className="block mt-2">
-            Minimum time:{" "}
-            <input
-              type="number"
-              min={0}
-              value={settings.minOpenSeconds ?? 10}
-              onChange={(e) =>
-                updateSettings({
-                  minOpenSeconds: Math.max(0, parseInt(e.target.value || 0)),
-                })
-              }
-              className="border p-1 ml-2 w-24 rounded"
-            />
-          </label>
-          <p className="text-sm mt-2">
-            Time given in seconds. A round cannot complete (and auto-progress) before this time elapses.
-          </p>
+      <div>
+        <h3 className="font-semibold">Strategy Labels</h3>
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          <div className="flex items-center justify-start">Player A</div>
+          <input
+            value={settings.labels.A[0]}
+            onChange={(e) =>
+              updateSettings({
+                labels: {
+                  ...settings.labels,
+                  A: [e.target.value, settings.labels.A[1]],
+                },
+              })
+            }
+            className="border p-2 rounded"
+          />
+          <input
+            value={settings.labels.A[1]}
+            onChange={(e) =>
+              updateSettings({
+                labels: {
+                  ...settings.labels,
+                  A: [settings.labels.A[0], e.target.value],
+                },
+              })
+            }
+            className="border p-2 rounded"
+          />
+          <div className="flex items-center justify-start">Player B</div>
+          <input
+            value={settings.labels.B[0]}
+            onChange={(e) =>
+              updateSettings({
+                labels: {
+                  ...settings.labels,
+                  B: [e.target.value, settings.labels.B[1]],
+                },
+              })
+            }
+            className="border p-2 rounded"
+          />
+          <input
+            value={settings.labels.B[1]}
+            onChange={(e) =>
+              updateSettings({
+                labels: {
+                  ...settings.labels,
+                  B: [settings.labels.B[0], e.target.value],
+                },
+              })
+            }
+            className="border p-2 rounded"
+          />
         </div>
       </div>
 
@@ -1241,9 +1242,9 @@ function InstructorView() {
         <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>
-              <th></th>
-              <th>B: {settings.labels.B[0]}</th>
-              <th>B: {settings.labels.B[1]}</th>
+              <th className="w-1/3"></th>
+              <th className="w-1/3">B: {settings.labels.B[0]}</th>
+              <th className="w-1/3">B: {settings.labels.B[1]}</th>
             </tr>
           </thead>
           <tbody>
@@ -1251,7 +1252,7 @@ function InstructorView() {
               <td>A: {settings.labels.A[0]}</td>
               <td>
                 <input
-                  className="border p-1 w-24 text-center rounded"
+                  className="border p-1 text-center rounded w-1/1"
                   value={pairToStr(payoffs.CC)}
                   onChange={(e) =>
                     updatePayoffCell("CC", parsePair(e.target.value))
@@ -1260,7 +1261,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 w-24 text-center rounded"
+                  className="border p-1 text-center rounded w-1/1"
                   value={pairToStr(payoffs.CD)}
                   onChange={(e) =>
                     updatePayoffCell("CD", parsePair(e.target.value))
@@ -1272,7 +1273,7 @@ function InstructorView() {
               <td>A: {settings.labels.A[1]}</td>
               <td>
                 <input
-                  className="border p-1 w-24 text-center rounded"
+                  className="border p-1 text-center rounded w-1/1"
                   value={pairToStr(payoffs.DC)}
                   onChange={(e) =>
                     updatePayoffCell("DC", parsePair(e.target.value))
@@ -1281,7 +1282,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 w-24 text-center rounded"
+                  className="border p-1 text-center rounded w-1/1"
                   value={pairToStr(payoffs.DD)}
                   onChange={(e) =>
                     updatePayoffCell("DD", parsePair(e.target.value))

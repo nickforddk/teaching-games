@@ -300,8 +300,8 @@ body:is(.override) > div#root {
     color: var(--black);
 
     &:is(button):hover {
-      background: var(--orange-v) !important;
-      color: var(--orange-pr);
+      background: var(--orange) !important;
+      color: var(--white);
     }
   }
   div[class*="bg-"]:not(.bg-background) {
