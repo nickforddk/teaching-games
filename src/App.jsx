@@ -138,7 +138,7 @@ function StudentView() {
       setPlayerKey(null);
       setRole("");
       setMyChoice(null);
-      setResetNotice("The instructor reset all players. Please join again.");
+      setResetNotice("The gamemaster reset all players. Please join again.");
     }
   }, [globalPlayers, playerKey]);
 
@@ -382,8 +382,8 @@ function StudentView() {
   // Join game
   const joinGame = async () => {
     if (!gameCode || !name) return alert("Enter game code and name");
-    if (gameExists === false) return alert("Game code not found. Ask the instructor to start the game.");
-    if (!settings) return alert("Instructor hasn't started the game");
+    if (gameExists === false) return alert("Game code not found. Ask the gamemaster to start the game.");
+    if (!settings) return alert("The gamemaster hasn't started the game");
     try {
       let assigned = role;
       const playersRef = ref(db, `games/${gameCode}/players`);
@@ -481,7 +481,7 @@ function StudentView() {
 
       {gameCode && gameExists === false && (
         <div className="text-sm text-red">
-          Game code not found. Verify the code with your instructor.
+          Game code not found. Verify the code with your gamemaster.
         </div>
       )}
       {gameCode && gameExists === null && (
@@ -1058,7 +1058,7 @@ function InstructorView() {
 
   return (
     <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full space-y-8">
-      <h2 className="text-lg font-bold">Instructor dashboard</h2>
+      <h2 className="text-lg font-bold">Administrator dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
         <input
