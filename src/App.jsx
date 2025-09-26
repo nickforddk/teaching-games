@@ -57,7 +57,6 @@ function StudentView() {
   const [currentRound, setCurrentRound] = useState(1);
   const [globalPlayers, setGlobalPlayers] = useState([]);
   const [roundPlayers, setRoundPlayers] = useState({});
-  const [prevRoundPlayers, setPrevRoundPlayers] = useState({});
   const [myChoice, setMyChoice] = useState(null);
   const [gameExists, setGameExists] = useState(null); // null unknown, true exists, false missing
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
@@ -143,19 +142,11 @@ function StudentView() {
     }
   }, [globalPlayers, playerKey]);
 
-  // Round players & previous round + current round completion
+  // Round players & current round completion
   useEffect(() => {
     if (!gameCode) return () => {};
     const roundRef = ref(db, `games/${gameCode}/rounds/${currentRound}/players`);
     const unsubRound = onValue(roundRef, (snap) => setRoundPlayers(snap.val() || {}));
-
-    let unsubPrev = () => {};
-    if (currentRound > 1) {
-      const prevRef = ref(db, `games/${gameCode}/rounds/${currentRound - 1}/players`);
-      unsubPrev = onValue(prevRef, (snap) => setPrevRoundPlayers(snap.val() || {}));
-    } else {
-      setPrevRoundPlayers({});
-    }
 
     const crRef = ref(db, `games/${gameCode}/settings/currentRound`);
     const unsubCR = onValue(crRef, (snap) => {
@@ -172,7 +163,6 @@ function StudentView() {
 
     return () => {
       unsubRound();
-      unsubPrev();
       unsubCR();
       unsubCompleted();
     };
@@ -226,22 +216,23 @@ function StudentView() {
   })();
   const opponentChoice = opponentKey ? roundPlayers[opponentKey]?.choice ?? null : null;
 
-  // Turn logic
-  const isMyTurn = (() => {
+  // Turn logic (updated for sequential games: A always starts each round)
+  const isMyTurn = useMemo(() => {
     if (!settings || !playerKey || myIndex === -1) return false;
-    if (myChoice === 0 || myChoice === 1) return false;
+    if (myChoice === 0 || myChoice === 1) return false; // already moved
     if (!settings.sequential) return true;
+
     if (role === "A") {
-      if (currentRound === 1) return true;
-      if (!pairedBKey) return false;
-      const prevB = prevRoundPlayers[pairedBKey];
-      return !!(prevB && (prevB.choice === 0 || prevB.choice === 1));
-    } else {
+      // In sequential mode A always moves first each round (even after an aborted prior round)
+      return true;
+    }
+    if (role === "B") {
       if (!pairedAKey) return false;
       const aEntry = roundPlayers[pairedAKey];
       return !!(aEntry && (aEntry.choice === 0 || aEntry.choice === 1));
     }
-  })();
+    return false;
+  }, [settings, playerKey, myIndex, myChoice, role, roundPlayers, pairedAKey]);
 
   // Game finished?
   const gameFinished =
@@ -462,8 +453,8 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background shadow rounded-lg p-6 md:p-8 w-full space-y-4">
-      <h2 className="text-lg font-bold text-center">Want to play?</h2>
+    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full space-y-4">
+      <h2 className="text-lg font-bold text-center">Do you want to play a game?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input
@@ -541,7 +532,7 @@ function StudentView() {
 
       {playerKey && (
         <>
-          <div className="text-sm text-grey">
+          <div className="text-xs md:text-sm text-grey">
             You: {name} — Player: <span className = {`font-bold ${roleTableClass}`}>{role}</span> — id:{" "}
             <span className="font-mono">{playerKey}</span>
           </div>
@@ -558,7 +549,7 @@ function StudentView() {
                 </div>
               )}
               {displayed?.full && (
-                <div>
+                <div className="overflow-auto">
                   <h3 className="font-semibold text-center">
                     Payoffs (A,B)
                   </h3>
@@ -598,7 +589,7 @@ function StudentView() {
                 </div>
               )}
               {displayed?.side && (
-                <div>
+                <div className="overflow-auto">
                   <h3 className="font-semibold text-center">Your payoffs</h3>
                   <table className={`w-full text-center mt-2 ${roleTableClass}`}>
                     <thead>
@@ -684,7 +675,7 @@ function StudentView() {
                 Game over!
               </div>
               {payoffs && (
-                <div>
+                <div className="overflow-auto">
                   <h3 className="font-semibold text-center">
                     Payoff matrix (A,B)
                   </h3>
@@ -729,10 +720,10 @@ function StudentView() {
                    return (
                      <div
                        key={`${p.index}-${isMine ? 'mine' : 'other'}`}
-                       className={`rounded p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
+                       className={`rounded overflow-auto p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
                      >
                        <h4 className="font-semibold mb-4">{heading}</h4>
-                       <table className="w-full text-xs md:text-sm text-center table-p-1">
+                       <table className="w-full text-(length:--font-size--fineprint) md:text-sm text-center table-p-1">
                          <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
                            <tr>
                              <th>Round</th>
@@ -954,18 +945,31 @@ function InstructorView() {
     }
   };
 
-  const nextRoundManual = async () => {
+  const endOrNextRound = async () => {
     if (!gameCode) return alert("Enter a game code");
     const cur = settings.currentRound || 1;
-    if (cur >= settings.rounds) return alert("All rounds completed");
-    const next = cur + 1;
+    const last = settings.rounds || 1;
     try {
-      await update(ref(db, `games/${gameCode}/settings`), { currentRound: next });
-      await set(ref(db, `games/${gameCode}/rounds/${next}/startedAt`), Date.now()); // NEW
-      setSettings((s) => ({ ...s, currentRound: next }));
+      // Mark current round completed regardless of missing choices or minOpenSeconds
+      await set(ref(db, `games/${gameCode}/rounds/${cur}/completed`), true);
+
+      if (cur < last) {
+        if (settings.autoProgress) {
+          // Auto progression listener will detect completion and advance.
+          return;
+        }
+        // Manual advance (autoProgress off)
+        const next = cur + 1;
+        await update(ref(db, `games/${gameCode}/settings`), { currentRound: next });
+        await set(ref(db, `games/${gameCode}/rounds/${next}/startedAt`), Date.now());
+        setSettings(s => ({ ...s, currentRound: next }));
+      } else {
+        // Last round: students will see summary (they react to completed flag)
+        alert("Game ended.");
+      }
     } catch (e) {
       console.error(e);
-      alert("Failed to advance round");
+      alert("Failed to end / advance round");
     }
   };
 
@@ -981,108 +985,103 @@ function InstructorView() {
     }
   };
 
-  // === NEW: Reset all users (remove players and their round choices) ===
-  const resetAllUsers = async () => {
+  // === NEW (replaces resetAllUsers): Drop only inactive (no choice yet) users this round and end the round
+  const dropInactiveUsers = async () => {
     if (!gameCode) return alert("Enter a game code first");
-    if (!window.confirm("Remove ALL players and their choices? Students must re-join. Continue?")) return;
+    const cur = settings.currentRound || 1;
     try {
-      // Remove players list
-      await remove(ref(db, `games/${gameCode}/players`));
+      const roundPlayersSnap = await get(ref(db, `games/${gameCode}/rounds/${cur}/players`));
+      const roundPlayersObj = roundPlayersSnap.val() || {};
+      const inactiveKeys = Object.entries(roundPlayersObj)
+        .filter(([, p]) => !(p && (p.choice === 0 || p.choice === 1)))
+        .map(([k]) => k);
 
-      // Remove per-round player data & completion flags
-      const roundsSnap = await get(ref(db, `games/${gameCode}/rounds`));
-      if (roundsSnap.exists()) {
-        const roundsObj = roundsSnap.val() || {};
-        const updates = {};
-        Object.keys(roundsObj).forEach((r) => {
-          updates[`games/${gameCode}/rounds/${r}/players`] = null;
-          updates[`games/${gameCode}/rounds/${r}/completed`] = null;
-        });
-        if (Object.keys(updates).length) {
-          await update(ref(db), updates);
-        }
+      if (!inactiveKeys.length) {
+        alert("No inactive users to drop (all have chosen).");
+        // Still force-complete the round (acts as override)
+        await set(ref(db, `games/${gameCode}/rounds/${cur}/completed`), true);
+        return;
       }
 
-      // Local state reset
-      setPlayers([]);
-      alert("All users cleared. Students must join again.");
+      if (!window.confirm(`Drop ${inactiveKeys.length} inactive user(s) (have not chosen) and end the round?`))
+        return;
+
+      // Collect updates: remove players + their round entries (for all rounds up to current)
+      const roundsSnap = await get(ref(db, `games/${gameCode}/rounds`));
+      const roundsObj = roundsSnap.val() || {};
+      const updates = {};
+      inactiveKeys.forEach((k) => {
+        updates[`games/${gameCode}/players/${k}`] = null;
+        Object.keys(roundsObj).forEach(rKey => {
+          // Only clean up existing earlier/current rounds (string keys)
+            updates[`games/${gameCode}/rounds/${rKey}/players/${k}`] = null;
+        });
+      });
+
+      // Mark current round completed (forces progression / end logic)
+      updates[`games/${gameCode}/rounds/${cur}/completed`] = true;
+
+      await update(ref(db), updates);
+
+      // Local state cleanup
+      setPlayers(prev => prev.filter(p => !inactiveKeys.includes(p.key)));
+      setRoundSnapshot(prev => {
+        const clone = { ...prev };
+        inactiveKeys.forEach(k => delete clone[k]);
+        return clone;
+      });
+
+      alert(`Dropped ${inactiveKeys.length} inactive user(s) and ended round ${cur}.`);
     } catch (e) {
       console.error(e);
-      alert("Failed to reset users.");
+      alert("Failed to drop inactive users.");
     }
   };
 
-  // === NEW: Wipe ALL games from database ===
+  // Wipe ALL games (danger)
   const wipeAllGames = async () => {
-    if (!window.confirm("This will DELETE ALL games in the database. Are you sure?")) return;
-    if (!window.confirm("Final confirmation: This CANNOT be undone. Proceed?")) return;
+    if (!window.confirm("Delete ALL games from the database?")) return;
+    if (!window.confirm("This cannot be undone. Confirm again to proceed.")) return;
     try {
       await remove(ref(db, "games"));
       setGameCode("");
+      setSettings(s => ({ ...s, currentRound: 1 }));
       setPlayers([]);
       setRoundSnapshot({});
       setFullGameSnapshot(null);
-      alert("All games have been removed.");
+      alert("All games deleted.");
     } catch (e) {
       console.error(e);
-      alert("Failed to wipe all games.");
+      alert("Failed to wipe games.");
     }
   };
 
   return (
-    <div className="bg-background shadow rounded-lg p-6 md:p-8 w-full space-y-8">
+    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full space-y-8">
       <h2 className="text-lg font-bold">Instructor dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
-        <div className="flex flex-col gap-2">
-          <input
-            value={gameCode}
-            onChange={(e) => setGameCode(e.target.value.trim())}
-            placeholder="Game code"
-            className="border p-2 rounded w-full"
-            required
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={startNewGame}
-              className="py-4 px-3 rounded flex-1"
-            >
-              Start / reset game
-            </button>
-            {!settings.autoProgress && (
-              <button
-                onClick={nextRoundManual}
-                className="py-4 px-3 rounded flex-1"
-              >
-                Next round
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+        <input
+          value={gameCode}
+          onChange={(e) => setGameCode(e.target.value.trim())}
+          placeholder="Game code"
+          className="border p-2 rounded w-full"
+          required
+        />
+        <div className="flex gap-2">
           <button
-            onClick={revealAllPayoffs}
-            disabled={!gameCode}
-            className={`py-4 px-3 rounded text-white ${
-              gameCode ? "cursor-allowed" : "cursor-not-allowed"
-            }`}
+            onClick={startNewGame}
+            className="py-4 px-3 rounded flex-1 bg-cyan"
           >
-            Reveal payoffs
+            Start / reset game
           </button>
+          {/* Always show manual override button (even when autoProgress is on) */}
           <button
-            onClick={resetAllUsers}
-            disabled={!gameCode}
-            className={`py-4 px-3 rounded text-white ${
-              gameCode ? "cursor-allowed" : "cursor-not-allowed"
-            }`}
+            onClick={endOrNextRound}
+            className="py-4 px-3 rounded flex-1"
+            title="Force end of current round (manual override even if automatic progression is enabled)"
           >
-            Reset users
-          </button>
-          <button
-            onClick={wipeAllGames}
-            className="py-4 px-3 rounded bg-alert"
-          >
-            Wipe <strong>ALL</strong> games
+            End / next round
           </button>
         </div>
       </div>
@@ -1090,14 +1089,14 @@ function InstructorView() {
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <h3 className="font-semibold">Game settings</h3>
-          <label className="block mt-2">
-            Assignment:
+          <label className="flex items-center justify-start mt-2">
+            Players:
             <select
               value={settings.assignmentMode}
               onChange={(e) =>
                 updateSettings({ assignmentMode: e.target.value })
               }
-              className="border p-2 rounded w-full mt-1"
+              className="border p-1 ml-2 w-24 rounded"
             >
               <option value="random">Automatic assignment</option>
               <option value="choice">Students choose</option>
@@ -1137,7 +1136,7 @@ function InstructorView() {
         </div>
 
         <div>
-          <h3 className="font-semibold col-span-full">Rounds</h3>
+          <h3 className="font-semibold">Rounds</h3>
           <div>
             <label className="flex items-center justify-start mt-2">
               Rounds:{" "}
@@ -1293,6 +1292,37 @@ function InstructorView() {
         </p>
       </div>
 
+      <div className="grid gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={revealAllPayoffs}
+            disabled={!gameCode}
+            className={`py-4 px-3 rounded text-white ${
+              gameCode ? "cursor-allowed" : "cursor-not-allowed"
+            }`}
+          >
+            Reveal payoffs
+          </button>
+          <button
+            onClick={dropInactiveUsers}
+            disabled={!gameCode}
+            className={`py-4 px-3 rounded text-white ${
+              gameCode ? "cursor-allowed" : "cursor-not-allowed"
+            }`}
+            title="Remove only players who have not yet chosen this round and force round end"
+          >
+            Drop inactive users
+          </button>
+          <button
+            onClick={wipeAllGames}
+            className="py-4 px-3 rounded bg-alert"
+          >
+            Wipe <strong>ALL</strong> games
+          </button>
+        </div>
+      </div>
+
+
       <div>
         <h3 className="font-semibold mb-2">
           Players joined ({players.length})
@@ -1302,6 +1332,20 @@ function InstructorView() {
             <li key={p.key}>
               {p.name} ({p.role}) — id:{" "}
               <span className="font-mono">{p.key}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="font-semibold mb-2">
+          Current round players ({Object.keys(roundSnapshot).length})
+        </h3>
+        <ul className="list-disc list-inside text-base">
+          {Object.entries(roundSnapshot).map(([k, p]) => (
+            <li key={k}>
+              {p.name} ({p.role}) — id:{" "}
+              <span className="font-mono">{k}</span>
             </li>
           ))}
         </ul>
