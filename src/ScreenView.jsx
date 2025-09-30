@@ -101,7 +101,7 @@ export default function ScreenView() {
           <div className="grid grid-rows-2 md:grid-cols-2 md:grid-rows-1 text-center gap-8">
             <div className="flex flex-col justify-center gap-4 p-8 border border-blue-600 rounded">
               <h2 className="text-center">Enter game code</h2>
-              <code className="text-6xl m-1">{currentGameCode}</code>
+              <code className="text-6xl m-1 px-2 py-1">{currentGameCode}</code>
             </div>
             <div className="flex flex-col items-center justify-center text-center text-2xl px-6 py-8 bg-grey-700 text-white rounded">
               <span className="qrcode size-[15rem]"></span>
