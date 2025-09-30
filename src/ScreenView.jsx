@@ -187,7 +187,7 @@ export default function ScreenView() {
           {summaryPairs.length === 0 && <div className="text-center text-sm text-grey">No complete pairs.</div>}
         </div>
       </div>
-      <div className="md:w-xs bg-grey-600 flex md:flex-col gap-4 items-center justify-between rounded">
+      <div className="md:w-xs bg-grey-700 flex md:flex-col gap-4 items-center justify-between rounded">
           <code className="text-4xl mt-6 mx-4 border px-2 py-1">{currentGameCode}</code>
           <div className="flex flex-col md:w-full items-center text-center text-md px-4 py-8 bg-grey-700 text-white rounded">
             <span className="qrcode size-[4rem] md:size-[10rem] mb-2"></span>
