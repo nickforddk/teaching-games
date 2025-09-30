@@ -1,32 +1,8 @@
 // src/App.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { initializeApp } from "firebase/app";
-import {
-  getDatabase,
-  ref,
-  set,
-  push,
-  onValue,
-  remove,
-  get,
-  update,
-  runTransaction,
-} from "firebase/database";
-
-/* ===== Firebase config ===== */
-const firebaseConfig = {
-  apiKey: "AIzaSyCRVGx8k52WELbFv6jrwC9vElcbE885oUM",
-  authDomain: "mma-perspectives-u4.firebaseapp.com",
-  databaseURL:
-    "https://mma-perspectives-u4-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "mma-perspectives-u4",
-  storageBucket: "mma-perspectives-u4.firebasestorage.app",
-  messagingSenderId: "241966145630",
-  appId: "1:241966145630:web:6a0c341cca439e038cd4cf",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+import { ref, set, push, onValue, remove, get, update, runTransaction } from "firebase/database";
+import { db } from "./firebase";
+import ScreenView from "./ScreenView";
 
 const parsePair = (x) => {
   if (!x) return [0, 0];
@@ -37,12 +13,59 @@ const parsePair = (x) => {
 const pairToStr = (arr = [0, 0]) => `${arr[0]},${arr[1]}`;
 
 export default function App() {
-  const params = new URLSearchParams(window.location.search);
-  const isAdmin = (params.get("user") || "").toLowerCase() === "admin";
-  return (
-    <div className="flex items-start justify-center md:p-4">
-      {isAdmin ? <InstructorView /> : <StudentView />}
+  const path = window.location.pathname.replace(/\/+$/, "");
+  if (path === "/admin") return (
+    <>
+      <header>
+        <h1>Game theory</h1>
+      </header>
+      <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
+        <InstructorView />
+      </div>
+      <footer>
+        <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
+        <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
+      </footer>
+    </>
+  );
+  if (path === "/screen") return (
+    <div className="scoreboard w-screen h-screen">
+      <ScreenView />
     </div>
+  );
+  // Fallback legacy query param (optional; remove if undesired)
+  const params = new URLSearchParams(window.location.search);
+  if ((params.get("user") || "").toLowerCase() === "admin") {
+    // soft redirect to new path for cleanliness
+    window.history.replaceState({}, "", "/admin");
+    return (
+      <>
+        <header>
+          <h1>Game theory</h1>
+        </header>
+        <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
+          <InstructorView />
+        </div>
+        <footer>
+          <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
+          <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
+        </footer>
+      </>
+    );
+  }
+  return (
+    <>
+      <header>
+        <h1>Game theory</h1>
+      </header>
+      <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
+        <StudentView />
+      </div>
+      <footer>
+        <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
+        <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
+      </footer>
+    </>
   );
 }
 
@@ -453,7 +476,7 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full space-y-4">
+    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full max-w-[1200px] space-y-4">
       <h2 className="text-lg font-bold text-center">Do you want to play a game?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -485,7 +508,7 @@ function StudentView() {
         </div>
       )}
       {gameCode && gameExists === null && (
-        <div className="text-xs text-grey">Checking game code...</div>
+        <div className="text-xs text-grey-500">Checking game code...</div>
       )}
 
       {settings?.assignmentMode === "choice" && !playerKey && (
@@ -532,13 +555,29 @@ function StudentView() {
 
       {playerKey && (
         <>
-          <div className="text-xs md:text-sm text-grey">
-            You: {name} — Player: <span className = {`font-bold ${roleTableClass}`}>{role}</span> — id:{" "}
-            <span className="font-mono">{playerKey}</span>
-          </div>
-          <div className="text-center font-semibold">
-            Round {Math.min(currentRound, settings?.rounds || 1)} /{" "}
-            {settings?.rounds || 1}
+          <div className="grid grid-cols-2 md:flex gap-2">
+            <div className = {`flex md:flex-1 flex-col items-center text-base ${roleTableClass}bg text-white rounded p-2`}>
+              Player 
+              <span className="font-bold text-2xl">{role}</span>
+            </div>
+            {!gameFinished && (
+              <div className="flex md:flex-1 flex-col items-center text-base bg-grey-500 text-white tabular-nums rounded p-2">
+                Round 
+                <span className="text-2xl text-grey-200"><span className="font-bold text-white">{Math.min(currentRound, settings?.rounds || 1)}</span> /{" "}
+                {settings?.rounds || 1}</span>
+              </div>
+            )}
+            {gameFinished && (
+              <div className="flex md:flex-1 flex-col items-center justify-center font-bold text-xl text-center leading-[1.1] bg-cyan-500 text-white tabular-nums rounded p-2">
+                Game over!
+              </div>
+            )}
+            <div className="col-span-2 md:col-span-1 md:flex-4 flex flex-col justify-between text-base bg-grey-200 dark:bg-grey-600 dark:text-white rounded p-2">
+              You: {name}
+              <span className="text-xs text-grey-500">id:{" "}
+              <span className="font-mono">{playerKey}</span></span>
+            </div>
+
           </div>
 
           {!gameFinished && (
@@ -670,10 +709,7 @@ function StudentView() {
           )}
 
           {gameFinished && (
-            <div className="mt-6 space-y-4">
-              <div className="text-center text-2xl py-4 px-2 font-bold bg-cyan">
-                Game over!
-              </div>
+            <div className="mt-2 space-y-4">
               {payoffs && (
                 <div className="overflow-auto">
                   <h3 className="font-semibold text-center">
@@ -722,7 +758,7 @@ function StudentView() {
                        key={`${p.index}-${isMine ? 'mine' : 'other'}`}
                        className={`rounded overflow-auto p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
                      >
-                       <h4 className="font-semibold mb-4">{heading}</h4>
+                       <h4 className="font-semibold mb-4 tabular-nums">{heading}</h4>
                        <table className="w-full text-(length:--font-size--fineprint) md:text-sm text-center table-p-1">
                          <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
                            <tr>
@@ -772,7 +808,7 @@ function StudentView() {
                })()}
 
               {summaryData?.pairs.length === 0 && (
-                <div className="text-sm text-center text-grey">
+                <div className="text-sm text-center text-grey-500">
                   No complete pairs formed.
                 </div>
               )}
@@ -807,7 +843,9 @@ function InstructorView() {
   const [roundSnapshot, setRoundSnapshot] = useState({});
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
   const prevCompletedRef = useRef(undefined);
+  const [currentScreenGame, setCurrentScreenGame] = useState(null); // NEW: screen pointer
 
+  // Settings & payoffs subscription
   useEffect(() => {
     if (!gameCode) return () => {};
     const sRef = ref(db, `games/${gameCode}/settings`);
@@ -847,6 +885,7 @@ function InstructorView() {
     };
   }, [gameCode]);
 
+  // Players list
   useEffect(() => {
     if (!gameCode) return () => {};
     const playersRef = ref(db, `games/${gameCode}/players`);
@@ -858,6 +897,7 @@ function InstructorView() {
     return () => unsub();
   }, [gameCode]);
 
+  // Round players
   useEffect(() => {
     if (!gameCode) return () => {};
     const r = settings.currentRound || 1;
@@ -868,6 +908,7 @@ function InstructorView() {
     return () => unsub();
   }, [gameCode, settings.currentRound]);
 
+  // Completed flag & auto progression
   useEffect(() => {
     if (!gameCode) return () => {};
     const r = settings.currentRound || 1;
@@ -905,6 +946,13 @@ function InstructorView() {
     };
   }, [gameCode, settings.currentRound, settings.autoProgress, settings.rounds]);
 
+  // NEW: Current screen game (public /screen view)
+  useEffect(() => {
+    const scrRef = ref(db, "currentGame");
+    const unsub = onValue(scrRef, snap => setCurrentScreenGame(snap.val() || null));
+    return () => unsub();
+  }, []);
+
   const updateSettings = async (partial) => {
     setSettings((s) => ({ ...s, ...partial }));
     if (!gameCode) return;
@@ -932,8 +980,9 @@ function InstructorView() {
       const sToWrite = { ...settings, currentRound: 1 };
       await set(ref(db, `games/${gameCode}/settings`), sToWrite);
       await set(ref(db, `games/${gameCode}/payoffs`), payoffs);
-      // NEW: record round 1 start time
       await set(ref(db, `games/${gameCode}/rounds/1/startedAt`), Date.now());
+      // NEW: point /currentGame to this code for /screen
+      await set(ref(db, "currentGame"), gameCode);
       setSettings((s) => ({ ...s, currentRound: 1 }));
       setPlayers([]);
       setRoundSnapshot({});
@@ -1044,6 +1093,7 @@ function InstructorView() {
     if (!window.confirm("This cannot be undone. Confirm again to proceed.")) return;
     try {
       await remove(ref(db, "games"));
+      await remove(ref(db, "currentGame"));
       setGameCode("");
       setSettings(s => ({ ...s, currentRound: 1 }));
       setPlayers([]);
@@ -1056,8 +1106,25 @@ function InstructorView() {
     }
   };
 
+  // Toggle screen (public /screen view)
+  const toggleScreen = async () => {
+    if (!gameCode) return alert("Enter a game code first");
+    try {
+      if (currentScreenGame === gameCode) {
+        await remove(ref(db, "currentGame"));
+        alert("Screen disabled.");
+      } else {
+        await set(ref(db, "currentGame"), gameCode);
+        alert("Screen enabled for this game.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to toggle screen.");
+    }
+  };
+
   return (
-    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full space-y-8">
+    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full max-w-[1000px] space-y-8">
       <h2 className="text-lg font-bold">Administrator dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
@@ -1083,7 +1150,24 @@ function InstructorView() {
           >
             End / next round
           </button>
+          <button
+            onClick={toggleScreen}
+            disabled={!gameCode}
+            className={`py-4 px-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed opacity-60"}`}
+            title="Enable or disable the public /screen view for this game code"
+          >
+            {currentScreenGame === gameCode ? "Disable screen" : "Enable screen"}
+          </button>
         </div>
+        {gameCode && (
+          <p className="text-xs text-grey-500 mt-1">
+            Screen status: {currentScreenGame === gameCode
+              ? "Broadcasting this game"
+              : currentScreenGame
+                ? `Broadcasting another game (${currentScreenGame})`
+                : "Inactive"}
+          </p>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -1287,8 +1371,8 @@ function InstructorView() {
             </tr>
           </tbody>
         </table>
-        <p className="text-xs text-grey mt-1">
-          Enter cell like: <code>3,3</code>
+        <p className="flex items-center gap-1 text-xs text-grey-500 mt-1">
+          Enter cell like: <span className="border border-grey-500-200 px-[0.2rem] py-[0.1rem] rounded">3,3</span>
         </p>
       </div>
 
@@ -1351,7 +1435,7 @@ function InstructorView() {
         </ul>
       </div>
 
-      <details className="text-xs text-grey">
+      <details className="text-xs text-grey-500">
         <summary className="cursor-pointer">
           Debug: DB snapshot (games/{gameCode}) & current-round snapshot
         </summary>
