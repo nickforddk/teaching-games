@@ -345,16 +345,16 @@ table {
 
 
 *:not(table).playera {
-  color: light-dark(var(--violet-half), var(--violet-g));
+  color: var(--violet);
 }
 *:not(table).playerb {
-  color: light-dark(var(--orange-half), var(--orange-g));
+  color: var(--orange);
 }
 .playerabg {
-  background: light-dark(var(--violet-half), var(--violet-g));
+  background: var(--violet);
 }
 .playerbbg {
-  background: light-dark(var(--orange-half), var(--orange-g));
+  background: var(--orange);
 }
 
 table.border-separate {

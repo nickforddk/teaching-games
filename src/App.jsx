@@ -581,7 +581,7 @@ function StudentView() {
       {playerKey && (
         <>
           <div className="grid grid-cols-2 md:flex gap-2">
-            <div className = {`flex md:flex-1 flex-col items-center text-base ${roleTableClass}bg text-white dark:text-blue-900 rounded p-2`}>
+            <div className = {`flex md:flex-1 flex-col items-center text-base ${roleTableClass}bg text-white rounded p-2`}>
               Player 
               <span className="font-bold text-2xl">{role}</span>
             </div>
