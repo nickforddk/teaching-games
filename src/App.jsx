@@ -13,31 +13,24 @@ const parsePair = (x) => {
 const pairToStr = (arr = [0, 0]) => `${arr[0]},${arr[1]}`;
 
 export default function App() {
-  const path = window.location.pathname.replace(/\/+$/, "");
-  if (path === "/admin") return (
-    <>
-      <header>
-        <h1>Game theory</h1>
-      </header>
-      <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
-        <InstructorView />
-      </div>
-      <footer>
-        <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
-        <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
-      </footer>
-    </>
-  );
-  if (path === "/screen") return (
-    <div className="scoreboard w-screen h-screen">
-      <ScreenView />
-    </div>
-  );
-  // Fallback legacy query param (optional; remove if undesired)
-  const params = new URLSearchParams(window.location.search);
-  if ((params.get("user") || "").toLowerCase() === "admin") {
-    // soft redirect to new path for cleanliness
-    window.history.replaceState({}, "", "/admin");
+  // Normalize route to work both on localhost (/) and GitHub Pages (/teaching-games/)
+  function getBasePath() {
+    const b = (import.meta.env.BASE_URL || '/');
+    return b.endsWith('/') ? b.slice(0, -1) : b;
+  }
+  function resolveRoute() {
+    const base = getBasePath();
+    let p = window.location.pathname;
+    if (base && p.startsWith(base)) p = p.slice(base.length);
+    if (!p.startsWith('/')) p = '/' + p;
+    p = p.replace(/\/{2,}/g, '/');
+    if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+    return p || '/';
+  }
+
+  const route = resolveRoute();
+
+  if (route === '/admin') {
     return (
       <>
         <header>
@@ -47,12 +40,44 @@ export default function App() {
           <InstructorView />
         </div>
         <footer>
-          <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
-          <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
+          <a href="https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" className="sdu" title="SDU: University of Southern Denmark"></a>
+          <a href="https://www.nickford.com" className="nf" title="Nick Ford"></a>
         </footer>
       </>
     );
   }
+
+  if (route === '/screen') {
+    return (
+      <div className="scoreboard w-screen h-screen">
+        <ScreenView />
+      </div>
+    );
+  }
+
+  // Legacy support (?user=admin) → rewrite to base + /admin
+  const params = new URLSearchParams(window.location.search);
+  if ((params.get('user') || '').toLowerCase() === 'admin') {
+    const newUrl = `${getBasePath()}/admin`;
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState({}, '', newUrl);
+    }
+    return (
+      <>
+        <header>
+          <h1>Game theory</h1>
+        </header>
+        <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
+          <InstructorView />
+        </div>
+        <footer>
+          <a href="https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" className="sdu" title="SDU: University of Southern Denmark"></a>
+          <a href="https://www.nickford.com" className="nf" title="Nick Ford"></a>
+        </footer>
+      </>
+    );
+  }
+
   return (
     <>
       <header>
@@ -62,8 +87,8 @@ export default function App() {
         <StudentView />
       </div>
       <footer>
-        <a href = "https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" class = "sdu" title = "SDU: University of Southern Denmark"></a>
-        <a href = "https://www.nickford.com" class = "nf" title = "Nick Ford"></a>
+        <a href="https://www.sdu.dk/en/om-sdu/institutter-centre/oekonomiskinstitut" className="sdu" title="SDU: University of Southern Denmark"></a>
+        <a href="https://www.nickford.com" className="nf" title="Nick Ford"></a>
       </footer>
     </>
   );
