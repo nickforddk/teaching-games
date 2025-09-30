@@ -3,7 +3,7 @@ import { getDatabase } from "firebase/database";
 import { getAuth, GithubAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCRVGx8k52WELbFv6jrwC9vElcbE885oUM",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "mma-perspectives-u4.firebaseapp.com",
   databaseURL: "https://mma-perspectives-u4-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "mma-perspectives-u4",

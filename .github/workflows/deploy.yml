@@ -16,6 +16,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_ADMIN_UID: ${{ secrets.VITE_ADMIN_UID }}
+      VITE_ADMIN_GH_USERNAME: ${{ secrets.VITE_ADMIN_GH_USERNAME }}
+      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
