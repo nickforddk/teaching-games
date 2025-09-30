@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ref, set, push, onValue, remove, get, update, runTransaction } from "firebase/database";
 import { db } from "./firebase";
 import ScreenView from "./ScreenView";
+import { useAdminAuth } from "./useAdminAuth";
 
 const parsePair = (x) => {
   if (!x) return [0, 0];
@@ -29,12 +30,39 @@ export default function App() {
   }
 
   const route = resolveRoute();
+  const authState = useAdminAuth();
 
   if (route === '/admin') {
+    if (!authState.ready) return <div className="p-8">Authenticating…</div>;
+    if (!authState.user)
+      return (
+        <div className="p-8 bg-background rounded shadow space-y-4 text-center my-auto">
+          <h2 className="text-xl font-bold">Gamemaster sign-in</h2>
+          <button onClick={authState.login} className="py-3 px-4 rounded bg-blue-700 hover:bg-blue-600 text-white">
+            Sign in with GitHub
+          </button>
+        </div>
+      );
+    if (!authState.isAdmin)
+      return (
+        <div className="p-8 bg-alert rounded border text-black space-y-4 text-center my-auto">
+          <h2 className="text-xl font-bold">Not authorised</h2>
+          <p className="text-sm">This GitHub account does not have access to this app.</p>
+          <button onClick={authState.logout} className="py-2 px-3 rounded bg-black hover:bg-orange-600 text-white">
+            Sign out
+          </button>
+        </div>
+      );
+    // Authorized
     return (
       <>
         <header>
           <h1>Game theory</h1>
+          <div className="text-sm flex text-grey-600 dark:text-grey-400 items-center gap-2 py-1">
+            {authState.user.reloadUserInfo?.screenName}
+            {" "}
+            <button onClick={authState.logout} className="p-1">Sign out</button>
+          </div>
         </header>
         <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
           <InstructorView />

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth, GithubAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCRVGx8k52WELbFv6jrwC9vElcbE885oUM",
@@ -13,3 +14,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
+export const auth = getAuth(app);
+export const githubProvider = new GithubAuthProvider();
+githubProvider.addScope("read:user");

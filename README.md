@@ -1,17 +1,49 @@
-<<<<<<< HEAD
-# teaching-games
-Interactive tool for introductory game theory.
-=======
-# React + Vite
+# Teaching Games — Game Theory Interactive Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lightweight React app for teaching 2-player simultaneous games (student view, instructor/admin view, and a public screen).
 
-Currently, two official plugins are available:
+## Quick overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Student view: default route — players join a game and play rounds.
+- Instructor view: protected admin UI at /admin — start/reset games, manage rounds, enable/disable public screen.
+- Screen view: public projector page at /screen — shows game code while active and full results after a game concludes.
 
-## Expanding the ESLint configuration
+## Getting started (local)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
->>>>>>> 0f8e4db (Set up demo)
+1. Copy environment variables into `.env.local`:
+   - VITE_FIREBASE_API_KEY
+   - VITE_ADMIN_GH_USERNAME
+   - VITE_ADMIN_UID (recommended)
+2. Install and run:
+   - npm install
+   - npm run dev
+3. Open http://localhost:5173/ (student), http://localhost:5173/admin (instructor), http://localhost:5173/screen (public screen)
+
+## Firebase requirements
+
+- Enable GitHub sign-in provider in Firebase Auth and add authorized domains (localhost, your GitHub Pages domain, the firebaseapp/web.app domains).
+- Configure your Google Cloud API key referrer rules to allow your origins used for auth.
+- Secure Realtime Database rules so only the instructor UID can write game state (see code comments).
+
+## Deployment notes
+
+- Vite base is set for the GitHub Pages project path (e.g. `/teaching-games/`) in `vite.config.js`.
+- Builds with `npm run build`. A workflow is included to deploy via GitHub Actions.
+
+## Privacy & security
+
+- Instructor actions are gated by Firebase Auth and verified against the configured admin UID/username.
+- Realtime Database rules should enforce server‑side write restrictions — do not rely on client checks alone.
+
+## Files of interest
+
+- src/App.jsx — main routing and views
+- src/InstructorView / StudentView (inside App.jsx) — view logic
+- src/ScreenView.jsx — public screen shown at /screen
+- src/firebase.js — firebase initialization
+- src/useAdminAuth.js — GitHub auth helper
+
+## Short support
+
+- If auth popups fail, confirm Firebase Authorized Domains and API key referrer rules include your current origin(s).
+- For help updating env vars or DB rules, inspect `src/useAdminAuth.js` and `src/firebase.js`.
