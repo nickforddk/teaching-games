@@ -1206,7 +1206,7 @@ function InstructorView() {
           <button
             onClick={toggleScreen}
             disabled={!gameCode}
-            className={`py-4 px-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed opacity-60"}`}
+            className={`py-4 px-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed"}`}
             title="Enable or disable the public /screen view for this game code"
           >
             {currentScreenGame === gameCode ? "Disable screen" : "Enable screen"}
