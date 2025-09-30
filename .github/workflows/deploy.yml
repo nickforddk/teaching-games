@@ -38,6 +38,19 @@ jobs:
       - name: SPA fallback (copy index -> 404)
         run: cp dist/index.html dist/404.html
 
+      - name: Create .env.production
+        run: |
+          echo "VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}" >> .env.production
+          echo "VITE_ADMIN_UID=${VITE_ADMIN_UID}" >> .env.production
+          echo "VITE_ADMIN_GH_USERNAME=${VITE_ADMIN_GH_USERNAME}" >> .env.production
+          echo "Wrote env file"
+
+      - name: Debug env presence (length only)
+        run: |
+          echo "API key length: ${#VITE_FIREBASE_API_KEY}"
+          echo "Admin UID length: ${#VITE_ADMIN_UID}"
+          echo "Admin GH length: ${#VITE_ADMIN_GH_USERNAME}"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
