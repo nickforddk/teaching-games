@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-import.meta.env
+*.meta.env
 
 # Editor directories and files
 .vscode/*
