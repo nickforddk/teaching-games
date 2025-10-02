@@ -13,13 +13,13 @@ export function useAdminAuth() {
     onAuthStateChanged(auth, u => {
       setUser(u);
       setReady(true);
-      if (u && !ADMIN_UID && !ADMIN_GH) {
+      /* if (u && !ADMIN_UID && !ADMIN_GH) {
         console.log("Capture this UID and set VITE_ADMIN_UID:", u.uid);
         console.log("GitHub username:", u.reloadUserInfo?.screenName);
       }
       if (import.meta.env.DEV) {
         console.log("[auth env]", { ADMIN_UID, ADMIN_GH });
-      }
+      } */
     }), []);
 
   const login = async () => { await signInWithPopup(auth, githubProvider); };

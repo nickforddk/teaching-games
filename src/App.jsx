@@ -4,6 +4,8 @@ import { ref, set, push, onValue, remove, get, update, runTransaction } from "fi
 import { db } from "./firebase";
 import ScreenView from "./ScreenView";
 import { useAdminAuth } from "./useAdminAuth";
+import { auth } from "./firebase";
+import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
 
 const parsePair = (x) => {
   if (!x) return [0, 0];
@@ -139,6 +141,19 @@ function StudentView() {
   const [lastRoundCompleted, setLastRoundCompleted] = useState(false);
   const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false);
   const [resetNotice, setResetNotice] = useState(""); // NEW: message when instructor resets users
+  const [uid, setUid] = useState(null);
+
+  // Auth state change listener
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      if (u) setUid(u.uid);
+      else signInAnonymously(auth).catch(e => console.error("Anon auth error", e));
+    });
+    if (!auth.currentUser) {
+      signInAnonymously(auth).catch(e => console.error("Anon auth error", e));
+    }
+    return () => unsub();
+  }, []);
 
   // Settings & payoffs subscription (with existence check)
   useEffect(() => {
@@ -457,55 +472,42 @@ function StudentView() {
 
   // Join game
   const joinGame = async () => {
-    if (!gameCode || !name) return alert("Enter game code and name");
-    if (gameExists === false) return alert("Game code not found. Ask the gamemaster to start the game.");
-    if (!settings) return alert("The gamemaster hasn't started the game");
+    if (!uid) return alert("Auth not ready yet");
+    if (!gameCode || !name) return alert("Fill all fields");
+    if (settings?.assignmentMode === "choice" && !role) return alert("Select a role");
+
+    // Auto-assign role if in random assignment mode
+    let finalRole = role;
+    if (settings?.assignmentMode === "random") {
+      const aCount = globalPlayers.filter(p => p.role === "A").length;
+      const bCount = globalPlayers.filter(p => p.role === "B").length;
+      if (aCount < bCount) finalRole = "A";
+      else if (bCount < aCount) finalRole = "B";
+      else finalRole = Math.random() < 0.5 ? "A" : "B";
+      setRole(finalRole);
+    }
+
+    if (!finalRole) return alert("Could not determine role (try again)");
+
     try {
-      let assigned = role;
-      const playersRef = ref(db, `games/${gameCode}/players`);
-      if (settings.assignmentMode === "random") {
-        const snap = await get(playersRef);
-        const existing = snap.val() || {};
-        const roles = Object.values(existing).map((p) => p.role);
-        const countA = roles.filter((r) => r === "A").length;
-        const countB = roles.filter((r) => r === "B").length;
-        assigned = countA <= countB ? "A" : "B";
-        setRole(assigned);
-      } else {
-        if (!assigned) return alert("Select a role (A or B)");
-      }
-      const newRef = push(playersRef);
-      await set(newRef, { name, role: assigned });
-      setPlayerKey(newRef.key);
-      await set(ref(db, `games/${gameCode}/rounds/${currentRound}/players/${newRef.key}`), {
+      await set(ref(db, `games/${gameCode}/players/${uid}`), {
         name,
-        role: assigned,
-        choice: null,
+        role: finalRole,
+        joinedAt: Date.now()
       });
-      setResetNotice(""); // clear any prior reset notice on new join
-      alert(`Joined as Player ${assigned}`);
+      setPlayerKey(uid);
     } catch (e) {
       console.error(e);
-      alert("Failed to join game");
+      alert("Join failed");
     }
   };
 
   // Submit choice
   const submitChoice = async (idx) => {
-    if (!playerKey) return alert("Join first");
-    if (gameFinished) return alert("Game finished");
-    if (!isMyTurn && settings?.sequential) return alert("Not your turn");
-    if (myChoice === 0 || myChoice === 1) return alert("You already chose this round");
-    if (currentRound > (settings?.rounds || 1)) return alert("Game finished");
-    try {
-      const path = `games/${gameCode}/rounds/${currentRound}/players/${playerKey}`;
-      await set(ref(db, path), { name, role, choice: idx, ts: Date.now() });
-      setMyChoice(idx);
-      await checkAndMarkRoundCompleted(gameCode, currentRound);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to submit choice");
-    }
+    if (!uid || !settings?.currentRound) return;
+    const round = settings.currentRound;
+    await set(ref(db, `games/${gameCode}/rounds/${round}/players/${uid}/choice`), idx);
+    await set(ref(db, `games/${gameCode}/rounds/${round}/players/${uid}/committedAt`), Date.now());
   };
 
   const choiceLabel = (roleLocal, idx) => {
@@ -896,7 +898,10 @@ function InstructorView() {
   const [roundSnapshot, setRoundSnapshot] = useState({});
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
   const prevCompletedRef = useRef(undefined);
-  const [currentScreenGame, setCurrentScreenGame] = useState(null); // NEW: screen pointer
+  const [currentScreenGame, setCurrentScreenGame] = useState(null);
+  // NEW: track startedAt + completion state of current round
+  const [currentRoundStartedAt, setCurrentRoundStartedAt] = useState(null); // NEW
+  const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false); // NEW
 
   // Settings & payoffs subscription
   useEffect(() => {
@@ -955,19 +960,27 @@ function InstructorView() {
     if (!gameCode) return () => {};
     const r = settings.currentRound || 1;
     const roundRef = ref(db, `games/${gameCode}/rounds/${r}/players`);
-    const unsub = onValue(roundRef, (snap) =>
-      setRoundSnapshot(snap.val() || {})
-    );
+    const unsub = onValue(roundRef, (snap) => setRoundSnapshot(snap.val() || {}));
     return () => unsub();
   }, [gameCode, settings.currentRound]);
 
-  // Completed flag & auto progression
+  // NEW: subscribe to startedAt of current round
+  useEffect(() => {
+    if (!gameCode) return () => {};
+    const r = settings.currentRound || 1;
+    const sRef = ref(db, `games/${gameCode}/rounds/${r}/startedAt`);
+    const unsub = onValue(sRef, snap => setCurrentRoundStartedAt(snap.val() || null));
+    return () => unsub();
+  }, [gameCode, settings.currentRound]);
+
+  // Completed flag & auto progression (store completion state)
   useEffect(() => {
     if (!gameCode) return () => {};
     const r = settings.currentRound || 1;
     const completedRef = ref(db, `games/${gameCode}/rounds/${r}/completed`);
     const unsub = onValue(completedRef, (snap) => {
       const val = snap.val();
+      setCurrentRoundCompleted(!!val); // NEW
       if (prevCompletedRef.current === undefined) {
         prevCompletedRef.current = !!val;
         return;
@@ -976,15 +989,13 @@ function InstructorView() {
         const curRef = ref(db, `games/${gameCode}/settings/currentRound`);
         runTransaction(curRef, (cur) => {
           if (typeof cur !== "number") return;
-          if (cur === settings.currentRound && cur < (settings.rounds || 1))
-            return cur + 1;
+            if (cur === settings.currentRound && cur < (settings.rounds || 1)) return cur + 1;
           return;
         })
           .then(async (res) => {
             if (res.committed) {
               const newVal = res.snapshot.val();
               if (newVal && newVal !== settings.currentRound) {
-                // NEW: set startedAt for the new round
                 await set(ref(db, `games/${gameCode}/rounds/${newVal}/startedAt`), Date.now());
               }
             }
@@ -999,10 +1010,66 @@ function InstructorView() {
     };
   }, [gameCode, settings.currentRound, settings.autoProgress, settings.rounds]);
 
-  // NEW: Current screen game (public /screen view)
+  // NEW: auto-complete a round when all pairs have chosen AND minOpenSeconds elapsed
   useEffect(() => {
-    const scrRef = ref(db, "currentGame");
-    const unsub = onValue(scrRef, snap => setCurrentScreenGame(snap.val() || null));
+    if (!gameCode) return;
+    if (!settings.autoProgress) return;
+    if (currentRoundCompleted) return;
+
+    const r = settings.currentRound || 1;
+    const minSecs = settings.minOpenSeconds ?? 0;
+
+    // Build ordered role arrays
+    const aKeys = players.filter(p => p.role === "A").map(p => p.key);
+    const bKeys = players.filter(p => p.role === "B").map(p => p.key);
+    const pairCount = Math.min(aKeys.length, bKeys.length);
+    if (pairCount === 0) return; // nothing to do
+
+    // Check if every pair has both choices
+    for (let i = 0; i < pairCount; i++) {
+      const aEntry = roundSnapshot[aKeys[i]];
+      const bEntry = roundSnapshot[bKeys[i]];
+      const aDone = aEntry && (aEntry.choice === 0 || aEntry.choice === 1);
+      const bDone = bEntry && (bEntry.choice === 0 || bEntry.choice === 1);
+      if (!aDone || !bDone) return; // still waiting
+    }
+
+    // All pairs done; ensure min time elapsed
+    if (!currentRoundStartedAt) return;
+    const elapsed = Date.now() - currentRoundStartedAt;
+    if (elapsed < minSecs * 1000) {
+      const remaining = minSecs * 1000 - elapsed + 25;
+      const t = setTimeout(() => {
+        // Re-check completion & still same round
+        if (!currentRoundCompleted && settings.currentRound === r) {
+          set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true)
+            .catch(e => console.error("auto-complete (delayed) error", e));
+        }
+      }, remaining);
+      return () => clearTimeout(t);
+    } else {
+      // Min time already satisfied
+      set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true)
+        .catch(e => console.error("auto-complete error", e));
+    }
+  }, [
+    gameCode,
+    settings.autoProgress,
+    settings.currentRound,
+    settings.minOpenSeconds,
+    players,
+    roundSnapshot,
+    currentRoundStartedAt,
+    currentRoundCompleted
+  ]);
+
+  // Subscribe to currentGame (public screen toggle)
+  useEffect(() => {
+    const cgRef = ref(db, "currentGame");
+    const unsub = onValue(cgRef, snap => {
+      const v = snap.val();
+      setCurrentScreenGame(typeof v === "string" ? v : null);
+    });
     return () => unsub();
   }, []);
 
@@ -1164,10 +1231,10 @@ function InstructorView() {
     if (!gameCode) return alert("Enter a game code first");
     try {
       if (currentScreenGame === gameCode) {
-        await remove(ref(db, "currentGame"));
+        await remove(ref(db, "currentGame"));            // disables
         alert("Screen disabled.");
       } else {
-        await set(ref(db, "currentGame"), gameCode);
+        await set(ref(db, "currentGame"), gameCode);     // enables
         alert("Screen enabled for this game.");
       }
     } catch (e) {
@@ -1479,12 +1546,21 @@ function InstructorView() {
           Current round players ({Object.keys(roundSnapshot).length})
         </h3>
         <ul className="list-disc list-inside text-base">
-          {Object.entries(roundSnapshot).map(([k, p]) => (
-            <li key={k}>
-              {p.name} ({p.role}) — id:{" "}
-              <span className="font-mono">{k}</span>
-            </li>
-          ))}
+          {Object.entries(roundSnapshot).map(([k, rp]) => {
+            const meta = players.find(pl => pl.key === k);
+            const name = meta?.name || 'Unknown';
+            const role = meta?.role || '?';
+            return (
+              <li key={k}>
+                {name} ({role}) — id: <span className="font-mono">{k}</span>
+                {(rp.choice === 0 || rp.choice === 1) && (
+                  <span className="ml-2 text-xs text-grey-500">
+                    Choice: {settings.labels?.[role]?.[rp.choice] ?? rp.choice}
+                  </span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
 
