@@ -109,14 +109,74 @@
   --color-violet-50: var(--color-violet-100);
   --color-grey-50: var(--color-grey-100);
 
+  /* --- Border Radii --- */
+  --radius-none: 0;
+  --radius-xs: 0.1rem;
+  --tw-radius: 0.125rem;       /* default radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 2rem;
+  --radius-2xl: 4rem;
+  --radius-1em: 1em;
+  --radius-1lh: 1lh;
+  --radius-full: 9999px;
 }
 
 @layer base {
+  :root {
+    --tw-border-width: max(0.1rem, 0.1em);
+    --tw-radius: 0.125rem;
+  }
+
   [class*="bg-"] :is(h1, h2, h3, h4) {
     color: inherit;
 
     &[class*="text-"] {
       color: unset;
+    }
+  }
+}
+
+@layer utilities {
+  /* Make .border use your site default */
+  .border { border-width: var(--tw-border-width); }
+
+  /* Optional: keep axis shorthands consistent */
+  .border-x {
+    border-inline-width: var(--tw-border-width);
+  }
+  .border-y {
+    border-block-width: var(--tw-border-width);
+  }
+  .border-s {
+    border-inline-start-width: var(--tw-border-width);
+  }
+  .border-e {
+    border-inline-end-width: var(--tw-border-width);
+  }
+  .border-t {
+    border-top-width: var(--tw-border-width);
+  }
+  .border-r {
+    border-right-width: var(--tw-border-width);
+  }
+  .border-b {
+    border-bottom-width: var(--tw-border-width);
+  }
+  .border-l {
+    border-left-width: var(--tw-border-width);
+  }
+  .divide-x {
+    & > :not(:last-child) {
+      border-inline-start-width: 0px;
+      border-inline-end-width: var(--tw-border-width);
+    }
+  }
+  .divide-y {
+    & > :not(:last-child) {
+      border-top-width: 0px;
+      border-bottom-width: var(--tw-border-width);
     }
   }
 }
