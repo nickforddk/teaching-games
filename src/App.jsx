@@ -638,7 +638,7 @@ function StudentView() {
           {!gameFinished && (
             <div>
               {!displayed && (
-                <div className="text-center text-red-500 font-semibold">
+                <div className="text-center text-blue-500 font-semibold motion-safe:animate-pulse">
                   ⏳ Wait for your turn
                 </div>
               )}
