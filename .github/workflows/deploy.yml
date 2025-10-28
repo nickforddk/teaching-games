@@ -27,13 +27,8 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
-      - run: npm ci
-
-      - name: Build
-        env:
-          NODE_ENV: production
-        run: npm run build
+      - run: npm install            # use npm ci only if lockfile is committed
+      - run: npm run build
 
       - name: SPA fallback (copy index -> 404)
         run: cp dist/index.html dist/404.html
