@@ -974,7 +974,7 @@ body {
 
         animation: header-tone 1ms ease-in-out both;
         animation-timeline: scroll();
-        animation-range: 0vh 25vh;
+        animation-range: 0vh 10vh;
 
         > a.logo {
             display: flex;

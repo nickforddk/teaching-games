@@ -554,7 +554,7 @@ function StudentView() {
       </div>
 
       {resetNotice && !playerKey && (
-        <div className="text-sm bg-alert p-2">{resetNotice}</div>
+        <div className="text-sm bg-alert text-black p-2 rounded">{resetNotice}</div>
       )}
 
       {gameCode && gameExists === false && (
@@ -581,7 +581,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`py-4 px-2 rounded text-white ${
+            className={`p-3 rounded text-white ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -597,7 +597,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`w-full py-4 px-2 rounded text-white ${
+            className={`w-full p-3 rounded text-white ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -722,7 +722,7 @@ function StudentView() {
                   myChoice === 1 ||
                   currentRound > (settings?.rounds || 1)
                 }
-                className={`py-4 px-2 rounded ${
+                className={`p-3 rounded ${
                   isMyTurn
                     ? "cursor-allowed"
                     : "cursor-not-allowed"
@@ -739,7 +739,7 @@ function StudentView() {
                   myChoice === 1 ||
                   currentRound > (settings?.rounds || 1)
                 }
-                className={`py-4 px-2 rounded ${
+                className={`p-3 rounded ${
                   isMyTurn
                     ? "cursor-allowed"
                     : "cursor-not-allowed"
@@ -751,14 +751,14 @@ function StudentView() {
           )}
 
           {!gameFinished && canRevealOpponentChoice && (
-            <div className="text-center text-sm mt-2">
+            <div className="text-center text-base mt-2">
               👀 Opponent chose:{" "}
               {choiceLabel(role === "A" ? "B" : "A", opponentChoice)}
             </div>
           )}
 
           {!gameFinished && (myChoice === 0 || myChoice === 1) && (
-            <div className="text-center text-sm mt-2">
+            <div className="text-center text-base mt-2">
               ✅ You chose: {choiceLabel(role, myChoice)}
             </div>
           )}
@@ -863,7 +863,7 @@ function StudentView() {
                })()}
 
               {summaryData?.pairs.length === 0 && (
-                <div className="text-sm text-center text-grey-500">
+                <div className="text-base text-center text-grey-500">
                   No complete pairs formed.
                 </div>
               )}
@@ -1258,14 +1258,14 @@ function InstructorView() {
         <div className="flex gap-2">
           <button
             onClick={startNewGame}
-            className="py-4 px-3 rounded flex-1 bg-cyan-500 hover:bg-cyan-600 active:bg-grey-400 active:text-grey-100 text-white"
+            className="p-3 rounded flex-1 bg-cyan-500 dark:bg-cyan-400 dark:text-cyan-700 hover:bg-cyan-600 hover:text-white active:bg-grey-400 active:text-grey-100 text-white"
           >
             Start / reset game
           </button>
           {/* Always show manual override button (even when autoProgress is on) */}
           <button
             onClick={endOrNextRound}
-            className="py-4 px-3 rounded flex-1"
+            className="p-3 rounded flex-1"
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
             End / next round
@@ -1273,7 +1273,7 @@ function InstructorView() {
           <button
             onClick={toggleScreen}
             disabled={!gameCode}
-            className={`py-4 px-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed"}`}
+            className={`p-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed"}`}
             title="Enable or disable the public /screen view for this game code"
           >
             {currentScreenGame === gameCode ? "Disable screen" : "Enable screen"}
@@ -1501,7 +1501,7 @@ function InstructorView() {
           <button
             onClick={revealAllPayoffs}
             disabled={!gameCode}
-            className={`py-4 px-3 rounded text-white ${
+            className={`p-3 rounded text-white ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
           >
@@ -1510,7 +1510,7 @@ function InstructorView() {
           <button
             onClick={dropInactiveUsers}
             disabled={!gameCode}
-            className={`py-4 px-3 rounded text-white ${
+            className={`p-3 rounded text-white ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
             title="Remove only players who have not yet chosen this round and force round end"
@@ -1519,7 +1519,7 @@ function InstructorView() {
           </button>
           <button
             onClick={wipeAllGames}
-            className="py-4 px-3 rounded bg-alert text-black hover:bg-orange-500 hover:text-white active:bg-black active:text-alert"
+            className="p-3 rounded bg-alert text-black hover:bg-orange-500 hover:text-white active:bg-black active:text-alert"
           >
             Wipe <strong>ALL</strong> games
           </button>

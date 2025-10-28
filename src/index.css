@@ -183,6 +183,11 @@ body {
           clip-path: circle();
         }
       }
+
+      button {
+        line-height: unset;
+        font-weight: unset;
+      }
     }
     > footer {
       all: unset;
@@ -277,6 +282,7 @@ body {
 
         &:hover {
           background-color: var(--halflevel);
+          color: var(--white);
         }
         &:active {
           background-color: var(--blue);
