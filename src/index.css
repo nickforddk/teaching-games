@@ -113,7 +113,7 @@
   --radius-*: initial;
   --radius-none: 0;
   --radius-xs: max(0.1rem, 0.1em);
-  --radius: 0.125rem;       /* default radius */
+  --radius: 0.175rem;       /* default radius */
   --radius-sm: 0.125rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.5rem;
