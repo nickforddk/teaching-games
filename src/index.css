@@ -111,6 +111,16 @@
 
 }
 
+@layer base {
+  [class*="bg-"] :is(h1, h2, h3, h4) {
+    color: inherit;
+
+    &[class*="text-"] {
+      color: unset;
+    }
+  }
+}
+
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
