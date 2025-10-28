@@ -38,8 +38,8 @@ export default function App() {
     if (!authState.ready) return <div className="p-8">Authenticating…</div>;
     if (!authState.user)
       return (
-        <div className="p-8 bg-background rounded shadow space-y-4 text-center my-auto">
-          <h2 className="text-xl font-bold">Gamemaster sign-in</h2>
+        <div className="p-8 bg-white dark:bg-blue-900 rounded shadow space-y-4 text-center my-auto">
+          <h2 className="text-xl font-bold text-blue-800 dark:text-white">Gamemaster sign-in</h2>
           <button onClick={authState.login} className="py-3 px-4 rounded bg-blue-700 hover:bg-blue-600 text-white">
             Sign in with GitHub
           </button>
@@ -48,9 +48,9 @@ export default function App() {
     if (!authState.isAdmin)
       return (
         <div className="p-8 bg-alert rounded border text-black space-y-4 text-center my-auto">
-          <h2 className="text-xl font-bold">Not authorised</h2>
+          <h2 className="text-xl font-bold text-black">Not authorised</h2>
           <p className="text-sm">This GitHub account does not have access to this app.</p>
-          <button onClick={authState.logout} className="py-2 px-3 rounded bg-black hover:bg-orange-600 text-white">
+          <button onClick={authState.logout} className="py-2 px-3 rounded bg-black text-white hover:bg-orange-600 active:bg-orange-500 active:text-alert">
             Sign out
           </button>
         </div>
@@ -60,10 +60,10 @@ export default function App() {
       <>
         <header>
           <h1>Game theory</h1>
-          <div className="text-sm flex text-grey-600 dark:text-grey-400 items-center gap-2 py-1">
-            {authState.user.reloadUserInfo?.screenName}
+          <div className="text-sm flex items-center gap-3">
+            <span className="text-grey-500 dark:text-grey-400 hidden sm:flex">{authState.user.reloadUserInfo?.screenName}</span>
             {" "}
-            <button onClick={authState.logout} className="p-1">Sign out</button>
+            <button onClick={authState.logout} className="px-2 py-1 rounded bg-grey-500 text-white hover:bg-alert hover:text-black active:bg-grey-800 active:text-alert cursor-pointer">Sign out</button>
           </div>
         </header>
         <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
@@ -531,8 +531,8 @@ function StudentView() {
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
 
   return (
-    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full max-w-[1200px] space-y-4">
-      <h2 className="text-lg font-bold text-center">Do you want to play a game?</h2>
+    <div className="bg-white dark:bg-blue-900 flex flex-col shadow rounded-lg p-4 md:p-6 w-full max-w-[1200px] space-y-4">
+      <h2 className="text-lg font-bold text-center text-blue-800 dark:text-white">Do you want to play a game?</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input
@@ -558,7 +558,7 @@ function StudentView() {
       )}
 
       {gameCode && gameExists === false && (
-        <div className="text-sm text-red">
+        <div className="text-sm text-red-500">
           Game code not found. Verify the code with your gamemaster.
         </div>
       )}
@@ -638,13 +638,13 @@ function StudentView() {
           {!gameFinished && (
             <div>
               {!displayed && (
-                <div className="text-center text-red font-semibold">
+                <div className="text-center text-red-500 font-semibold">
                   ⏳ Wait for your turn
                 </div>
               )}
               {displayed?.full && (
                 <div className="overflow-auto">
-                  <h3 className="font-semibold text-center">
+                  <h3 className="text-grey-500 text-center">
                     Payoffs (A,B)
                   </h3>
                   <table className={`w-full text-center mt-2 ${roleTableClass}`}>
@@ -684,7 +684,7 @@ function StudentView() {
               )}
               {displayed?.side && (
                 <div className="overflow-auto">
-                  <h3 className="font-semibold text-center">Your payoffs</h3>
+                  <h3 className="text-grey-500 text-center">Your payoffs</h3>
                   <table className={`w-full text-center mt-2 ${roleTableClass}`}>
                     <thead>
                       <tr>
@@ -767,7 +767,7 @@ function StudentView() {
             <div className="mt-2 space-y-4">
               {payoffs && (
                 <div className="overflow-auto">
-                  <h3 className="font-semibold text-center">
+                  <h3 className="text-grey-500 text-center">
                     Payoff matrix (A,B)
                   </h3>
                   <table className={`w-full text-center mt-2 text-base`}>
@@ -811,11 +811,11 @@ function StudentView() {
                    return (
                      <div
                        key={`${p.index}-${isMine ? 'mine' : 'other'}`}
-                       className={`rounded overflow-auto p-2 ${isMine ? "bg-blue" : "bg-toned"}`}
+                       className={`rounded overflow-auto p-2 ${isMine ? "bg-blue-500 text-white" : "bg-blue-200 text-blue-800 dark:bg-blue-700 dark:text-white"}`}
                      >
                        <h4 className="font-semibold mb-4 tabular-nums">{heading}</h4>
                        <table className="w-full text-(length:--font-size--fineprint) md:text-sm text-center table-p-1">
-                         <thead className={`bg-background ${isMine ? "text-blue" : ""}`}>
+                         <thead className={`bg-white dark:bg-blue-900 ${isMine ? "text-blue-500" : ""}`}>
                            <tr>
                              <th>Round</th>
                              <th>A's choice</th>
@@ -850,7 +850,7 @@ function StudentView() {
                                <td>{r.cell ? r.payoffB : "—"}</td>
                              </tr>
                            ))}
-                           <tr className={`font-semibold bg-background ${isMine ? "text-blue" : ""}`}>
+                           <tr className={`font-semibold bg-white dark:bg-blue-900 ${isMine ? "text-blue-500" : ""}`}>
                              <td colSpan={4}>Totals</td>
                              <td>{p.totalA}</td>
                              <td>{p.totalB}</td>
@@ -1244,8 +1244,8 @@ function InstructorView() {
   };
 
   return (
-    <div className="bg-background flex flex-col shadow rounded-lg p-6 md:p-8 w-full max-w-[1000px] space-y-8">
-      <h2 className="text-lg font-bold">Administrator dashboard</h2>
+    <div className="bg-white dark:bg-blue-900 flex flex-col shadow rounded-lg p-4 md:p-6 w-full max-w-[1000px] space-y-8">
+      <h2 className="text-lg font-bold text-blue-800 dark:text-white">Administrator dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-2">
         <input
@@ -1258,7 +1258,7 @@ function InstructorView() {
         <div className="flex gap-2">
           <button
             onClick={startNewGame}
-            className="py-4 px-3 rounded flex-1 bg-cyan"
+            className="py-4 px-3 rounded flex-1 bg-cyan-500 hover:bg-cyan-600 active:bg-grey-400 active:text-grey-100 text-white"
           >
             Start / reset game
           </button>
@@ -1292,7 +1292,7 @@ function InstructorView() {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <h3 className="font-semibold">Game settings</h3>
+          <h3 className="text-grey-500 text-grey-500">Game settings</h3>
           <label className="flex items-center justify-start mt-2">
             Players:
             <select
@@ -1340,7 +1340,7 @@ function InstructorView() {
         </div>
 
         <div>
-          <h3 className="font-semibold">Rounds</h3>
+          <h3 className="text-grey-500 text-grey-500">Rounds</h3>
           <div>
             <label className="flex items-center justify-start mt-2">
               Rounds:{" "}
@@ -1385,7 +1385,7 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="font-semibold">Payoff matrix (A,B)</h3>
+        <h3 className="text-grey-500">Payoff matrix (A,B)</h3>
         <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>
@@ -1519,7 +1519,7 @@ function InstructorView() {
           </button>
           <button
             onClick={wipeAllGames}
-            className="py-4 px-3 rounded bg-alert"
+            className="py-4 px-3 rounded bg-alert text-black hover:bg-orange-500 hover:text-white active:bg-black active:text-alert"
           >
             Wipe <strong>ALL</strong> games
           </button>
@@ -1528,7 +1528,7 @@ function InstructorView() {
 
 
       <div>
-        <h3 className="font-semibold mb-2">
+        <h3 className="text-grey-500 mb-2">
           Players joined ({players.length})
         </h3>
         <ul className="list-disc list-inside text-base">
@@ -1542,7 +1542,7 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-2">
+        <h3 className="text-grey-500 mb-2">
           Current round players ({Object.keys(roundSnapshot).length})
         </h3>
         <ul className="list-disc list-inside text-base">
@@ -1572,13 +1572,13 @@ function InstructorView() {
           <div>
             <strong>Current round snapshot:</strong>
           </div>
-          <pre className="bg-background p-2 rounded max-h-48 overflow-auto">
+          <pre className="bg-white dark:bg-blue-900 p-2 rounded max-h-48 overflow-auto">
             {JSON.stringify(roundSnapshot, null, 2)}
           </pre>
           <div>
             <strong>Full games/{gameCode} node:</strong>
           </div>
-          <pre className="bg-background p-2 rounded max-h-64 overflow-auto">
+          <pre className="bg-white dark:bg-blue-900 p-2 rounded max-h-64 overflow-auto">
             {JSON.stringify(fullGameSnapshot, null, 2)}
           </pre>
         </div>

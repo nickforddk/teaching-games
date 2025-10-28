@@ -348,17 +348,17 @@ body {
     h1 {
         font-size: var(--font-size--huge);
         font-weight: 800;
-        color: light-dark(var(--primary), var(--secondary));
+        /*color: light-dark(var(--primary), var(--secondary));*/
     }
     h2 {
         font-size: var(--font-size--x-large);
         font-weight: 700;
-        color: light-dark(var(--dark), var(--light));
+        /*color: light-dark(var(--dark), var(--light));*/
     }
     h3 {
         font-size: var(--font-size--medium);
         font-weight: 600;
-        color: var(--tertiary);
+        /*color: var(--tertiary);*/
     }
     :is(p, div, a).tab, h4, h5, h6 {
         font-weight: 500;
@@ -2991,9 +2991,6 @@ body {
 
     /* FORMS */
     button, input, optgroup, select, textarea {
-        border: max(0.1em, 0.1rem) solid var(--border-col, var(--tertiary));
-        background: light-dark(var(--white), var(--offblack));
-        color: light-dark(var(--offblack), var(--white));
         flex: 1;
         font-family: inherit;
         font-size: inherit;
@@ -3001,10 +2998,13 @@ body {
         box-sizing: border-box;
         display: inline-block;
         transition: all 0.2s ease;
-        border-radius: var(--border-rad--constant);
+        /*border-radius: var(--border-rad--constant);*/
 
         &:not(button) {
+            border: max(0.1em, 0.1rem) solid var(--border-col, var(--tertiary));
             padding: var(--border-weight);
+            background: light-dark(var(--white), var(--offblack));
+            color: light-dark(var(--offblack), var(--white));
         }
     }
 

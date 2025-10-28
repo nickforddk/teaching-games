@@ -108,6 +108,7 @@
   --color-red-50: var(--color-red-100);
   --color-violet-50: var(--color-violet-100);
   --color-grey-50: var(--color-grey-100);
+
 }
 
 :root {
@@ -117,6 +118,7 @@
   -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
 
+  --spacing: calc(var(--base-unit) / 4);
   --gradient--light: 
             linear-gradient(to top, var(--white), var(--white-00) 50%),
             radial-gradient(circle at top, var(--white-00) 50%, var(--blue-g)),
@@ -155,13 +157,6 @@ body {
 
   > div#root {
     display: contents;
-
-    :where(.border) {
-      border-width: max(0.1em, 0.1rem);
-    }
-    .rounded:not([class*="rounded-"]) {
-      border-radius: var(--border-rad);
-    }
 
     > header {
       > h1 {
@@ -271,22 +266,30 @@ body {
 
     button {
       border: unset;
-      background-color: light-dark(var(--primary), var(--blue-g));
-      color: light-dark(var(--white), var(--blue-d));
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
       line-height: 1.1;
 
+      &:not([class*="bg-"]) {
+        background-color: light-dark(var(--primary), var(--grey-v));
+        color: light-dark(var(--white), var(--blue-d));
+
+        &:hover {
+          background-color: var(--halflevel);
+        }
+        &:active {
+          background-color: var(--blue);
+          color: var(--blue-l);
+        }
+      }
+      
       &:is(div:has(> input:required:invalid) + div > button),
       &.cursor-not-allowed {
         pointer-events: none;
-        background-color: var(--grey);
-        color: var(--grey-l);
+        background-color: light-dark(var(--grey-g), var(--grey-pr));
+        color: light-dark(var(--color-grey-100), var(--grey-half));
       }
-    }
-    button:hover {
-      background-color: light-dark(var(--halflevel), var(--blue)) !important;
     }
     :focus,
     :focus-visible {
@@ -383,77 +386,7 @@ table.border-separate {
 
 
 body:is(.override) > div#root {
-  --spacing: 0.25rem;
-
-  .text-blue {
-    color: var(--blue);
-  }
-  .text-cyan {
-    color: var(--cyan);
-  }
-  .text-green {
-    color: var(--green);
-  }
-  .text-orange {
-    color: var(--orange);
-  }
-  .text-red {
-    color: var(--red);
-  }
-  .text-violet {
-    color: var(--violet);
-  }
-  .text-grey {
-    color: var(--grey);
-  }
-
-  .border {
-    border-width: max(0.1rem, 0.1em);
-  }
-
-  .bg-background {
-    background-color: light-dark(var(--white), var(--color-blue-900));
-  }
-  .bg-toned {
-    background-color: light-dark(var(--blue-l), var(--colorlevel));
-  }
-  .bg-blue {
-    background: var(--blue);
-    color: var(--white);
-  }
-  .bg-cyan {
-    background: var(--cyan);
-    color: var(--white);
-  }
-  .bg-green {
-    background: var(--green);
-    color: var(--white);
-  }
-  .bg-orange {
-    background: var(--orange);
-    color: var(--white);
-  }
-  .bg-red {
-    background: var(--red);
-    color: var(--white);
-  }
-  .bg-violet {
-    background: var(--violet);
-    color: var(--white);
-  }
-  .bg-grey {
-    background: var(--grey);
-    color: var(--white);
-  }
-  .bg-alert {
-    background: var(--alert);
-    color: var(--black);
-
-    &:is(button):hover {
-      background: var(--orange) !important;
-      color: var(--white);
-    }
-  }
+  
 
   table.table-p-1 :where(th, td) {
     padding: calc(var(--spacing) * 1);
