@@ -152,7 +152,7 @@
 }
 @layer components {
   input, optgroup, select, textarea {
-    @apply border rounded p-2 leading-[1.4] border-grey-500 bg-white text-grey-900 dark:bg-grey-900 dark:text-white disabled:text-grey-500 disabled:bg-grey-200 disabled:pointer-events-none dark:disabled:bg-grey-700 invalid:border-red-500 hover:border-blue-700 active:border-blue-700 focus:border-blue-700 focus-within:border-blue-700 dark:hover:border-blue-600 dark:active:border-blue-600 dark:focus:border-blue-600 dark:focus-within:border-blue-600;
+    @apply border rounded p-2 leading-[1.25] border-grey-500 bg-white text-grey-900 dark:bg-grey-900 dark:text-white disabled:text-grey-500 disabled:bg-grey-200 disabled:pointer-events-none dark:disabled:bg-grey-700 invalid:border-red-500 hover:border-blue-700 active:border-blue-700 focus:border-blue-700 focus-within:border-blue-700 dark:hover:border-blue-600 dark:active:border-blue-600 dark:focus:border-blue-600 dark:focus-within:border-blue-600;
   }
 
   button {
