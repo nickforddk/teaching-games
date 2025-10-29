@@ -47,7 +47,7 @@ export default function App() {
       );
     if (!authState.isAdmin)
       return (
-        <div className="p-8 bg-alert rounded-lg border-xs border-orange-500/25 text-black space-y-4 text-center my-auto">
+        <div className="p-8 bg-alert rounded-lg border-xs border-orange-500/25 shadow shadow-orange-500/50 text-black space-y-4 text-center my-auto">
           <h2 className="text-xl font-bold text-black">Not authorised</h2>
           <p className="text-sm">This GitHub account does not have access to this app.</p>
           <button onClick={authState.logout} className="py-2 px-3 rounded bg-black text-white hover:bg-orange-600 active:bg-orange-500 active:text-alert">
