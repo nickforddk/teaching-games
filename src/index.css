@@ -109,12 +109,27 @@
   --color-violet-50: var(--color-violet-100);
   --color-grey-50: var(--color-grey-100);
 
+  /* --- Border Widths --- */
+  --default-border-width: max(0.1rem, 0.1em);
+  --border-width-xs: 1px;
+  --border-width-sm: max(0.1rem, 0.1em);
+  --border-width-0: 0;
+  --border-width-1: 0.25rem;
+  --border-width-2: 0.5rem;
+  --border-width-3: 0.75rem;
+  --border-width-4: 1rem;
+  --border-width-5: 1.25rem;
+  --border-width-6: 1.5rem;
+  --border-width-7: 1.75rem;
+  --border-width-8: 2rem;
+
   /* --- Border Radii --- */
   --radius-*: initial;
-  --radius-none: 0;
-  --radius-xs: max(0.1rem, 0.1em);
   --radius: 0.175rem;       /* default radius */
-  --radius-sm: 0.125rem;
+  --radius-none: 0;
+  --radius-0: 0;
+  --radius-xs: max(0.1rem, 0.1em);
+  --radius-sm: 0.175rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 1rem;
@@ -127,10 +142,6 @@
 }
 
 @layer base {
-  :root {
-    --tw-border-width: max(0.1rem, 0.1em);
-  }
-
   [class*="bg-"] :is(h1, h2, h3, h4) {
     color: inherit;
 
@@ -140,48 +151,6 @@
   }
 }
 
-@layer utilities {
-  /* Make .border use your site default */
-  .border { border-width: var(--tw-border-width); }
-
-  /* Optional: keep axis shorthands consistent */
-  .border-x {
-    border-inline-width: var(--tw-border-width);
-  }
-  .border-y {
-    border-block-width: var(--tw-border-width);
-  }
-  .border-s {
-    border-inline-start-width: var(--tw-border-width);
-  }
-  .border-e {
-    border-inline-end-width: var(--tw-border-width);
-  }
-  .border-t {
-    border-top-width: var(--tw-border-width);
-  }
-  .border-r {
-    border-right-width: var(--tw-border-width);
-  }
-  .border-b {
-    border-bottom-width: var(--tw-border-width);
-  }
-  .border-l {
-    border-left-width: var(--tw-border-width);
-  }
-  .divide-x {
-    & > :not(:last-child) {
-      border-inline-start-width: 0px;
-      border-inline-end-width: var(--tw-border-width);
-    }
-  }
-  .divide-y {
-    & > :not(:last-child) {
-      border-top-width: 0px;
-      border-bottom-width: var(--tw-border-width);
-    }
-  }
-}
 
 :root {
   font-synthesis: none;
