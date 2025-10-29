@@ -2993,14 +2993,14 @@ body {
     button, input, optgroup, select, textarea {
         flex: 1;
         font-family: inherit;
-        font-size: inherit;
-        line-height: inherit;
+        transition: all 0.2s ease;
+        /*font-size: inherit;
         box-sizing: border-box;
         display: inline-block;
-        transition: all 0.2s ease;
-        /*border-radius: var(--border-rad--constant);*/
+        border-radius: var(--border-rad--constant);*/
 
         /*&:not(button) {
+            line-height: inherit;
             border: max(0.1em, 0.1rem) solid var(--border-col, var(--tertiary));
             padding: var(--border-weight);
             background: light-dark(var(--white), var(--offblack));
