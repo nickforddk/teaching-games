@@ -143,7 +143,7 @@ export default function ScreenView() {
 
         <div className="space-y-1 overflow-auto">
           {summaryPairs.map(p => (
-            <div key={p.index} className="flex rounded bg-toned p-4 overflow-auto">
+            <div key={p.index} className="flex rounded bg-blue-100 dark:bg-blue-900 dark:text-white p-4 overflow-auto">
               <h4 title={`${p.aName} (A) vs ${p.bName} (B)`} className="font-semibold mb-4 tabular-nums w-[10rem]">
                 Pair {p.index}
               </h4>
