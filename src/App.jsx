@@ -529,6 +529,8 @@ function StudentView() {
 
   const roleTableClass =
     role === "A" ? "playera" : role === "B" ? "playerb" : "";
+  const roleAltClass =
+    role === "A" ? "playerb" : role === "B" ? "playera" : "";
 
   return (
     <div className="bg-white dark:bg-blue-900 flex flex-col shadow rounded-lg p-4 md:p-6 w-full max-w-[1200px] space-y-4">
@@ -751,9 +753,8 @@ function StudentView() {
           )}
 
           {!gameFinished && canRevealOpponentChoice && (
-            <div className="text-center text-base mt-2">
-              👀 Opponent chose:{" "}
-              {choiceLabel(role === "A" ? "B" : "A", opponentChoice)}
+            <div className={`text-center text-base mt-2 ${roleAltClass}`}>
+              👀 Opponent chose: {choiceLabel(role === "A" ? "B" : "A", opponentChoice)}
             </div>
           )}
 
