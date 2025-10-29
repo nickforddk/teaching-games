@@ -3000,20 +3000,20 @@ body {
         transition: all 0.2s ease;
         /*border-radius: var(--border-rad--constant);*/
 
-        &:not(button) {
+        /*&:not(button) {
             border: max(0.1em, 0.1rem) solid var(--border-col, var(--tertiary));
             padding: var(--border-weight);
             background: light-dark(var(--white), var(--offblack));
             color: light-dark(var(--offblack), var(--white));
-        }
+        }*/
     }
 
-    :has(> :is(button, input, optgroup, select, textarea):required:invalid):not(:hover, :focus, :focus-within) {
+    /*:has(> :is(button, input, optgroup, select, textarea):required:invalid):not(:hover, :focus, :focus-within) {
         --border-col: oklch(from var(--highlight) l c calc(h - 180));
     }
     :has(> :is(button, input, optgroup, select, textarea):is(:hover, :focus, :focus-within)) {
         --border-col: var(--primary);
-    }
+    }*/
 
     /*.has-background :is(button, input, optgroup, select, textarea) {
         border: 0px;
