@@ -583,7 +583,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`p-3 rounded text-white ${
+            className={`p-3 rounded ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -599,7 +599,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`w-full p-3 rounded text-white ${
+            className={`w-full p-3 rounded ${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -1502,7 +1502,7 @@ function InstructorView() {
           <button
             onClick={revealAllPayoffs}
             disabled={!gameCode}
-            className={`p-3 rounded text-white ${
+            className={`p-3 rounded ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
           >
@@ -1511,7 +1511,7 @@ function InstructorView() {
           <button
             onClick={dropInactiveUsers}
             disabled={!gameCode}
-            className={`p-3 rounded text-white ${
+            className={`p-3 rounded ${
               gameCode ? "cursor-allowed" : "cursor-not-allowed"
             }`}
             title="Remove only players who have not yet chosen this round and force round end"
