@@ -544,13 +544,13 @@ function StudentView() {
             setGameCode(e.target.value.trim());
             if (!e.target.value) setResetNotice("");
           }}
-          className="p-2 rounded w-full placeholder-shown:border-red-500"
+          className="p-2 rounded w-full placeholder-shown:border-red-500 hover:placeholder-shown:border-red-700 dark:hover:placeholder-shown:border-red-300"
         />
         <input
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="p-2 rounded w-full placeholder-shown:border-red-500"
+          className="p-2 rounded w-full placeholder-shown:border-red-500 hover:placeholder-shown:border-red-700 dark:hover:placeholder-shown:border-red-300"
           required
         />
       </div>
