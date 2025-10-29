@@ -143,12 +143,12 @@ export default function ScreenView() {
 
         <div className="space-y-1 overflow-auto">
           {summaryPairs.map(p => (
-            <div key={p.index} className="flex rounded bg-blue-100 dark:bg-blue-900 dark:text-white p-4 overflow-auto">
+            <div key={p.index} className="flex rounded bg-blue-100 p-4 overflow-auto">
               <h4 title={`${p.aName} (A) vs ${p.bName} (B)`} className="font-semibold mb-4 tabular-nums w-[10rem]">
                 Pair {p.index}
               </h4>
               <table className="w-full text-center">
-                <thead className="bg-background">
+                <thead className="bg-white">
                   <tr>
                     <th>Round</th>
                     <th>A choice</th>
@@ -175,7 +175,7 @@ export default function ScreenView() {
                       <td>{r.cell ? r.payoffB : "—"}</td>
                     </tr>
                   ))}
-                  <tr className="font-semibold bg-background">
+                  <tr className="font-semibold bg-white">
                     <td colSpan={4}>Totals</td>
                     <td>{p.totalA}</td>
                     <td>{p.totalB}</td>
