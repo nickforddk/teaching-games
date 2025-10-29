@@ -544,13 +544,13 @@ function StudentView() {
             setGameCode(e.target.value.trim());
             if (!e.target.value) setResetNotice("");
           }}
-          className="border p-2 rounded w-full placeholder-shown:border-red-500"
+          className="p-2 rounded w-full placeholder-shown:border-red-500"
         />
         <input
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border p-2 rounded w-full placeholder-shown:border-red-500"
+          className="p-2 rounded w-full placeholder-shown:border-red-500"
           required
         />
       </div>
@@ -573,7 +573,7 @@ function StudentView() {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="border p-2 rounded w-full"
+            className="w-full"
             disabled={gameExists === false || !settings}
           >
             <option value="">Select role</option>
@@ -583,7 +583,7 @@ function StudentView() {
           <button
             onClick={joinGame}
             disabled={gameExists === false || !settings}
-            className={`p-3 rounded ${
+            className={`${
               gameExists === false || !settings
                 ? "cursor-not-allowed"
                 : "cursor-allowed"
@@ -1253,7 +1253,7 @@ function InstructorView() {
           value={gameCode}
           onChange={(e) => setGameCode(e.target.value.trim())}
           placeholder="Game code"
-          className="border p-2 rounded w-full"
+          className="w-full"
           required
         />
         <div className="flex gap-2">
@@ -1301,7 +1301,7 @@ function InstructorView() {
               onChange={(e) =>
                 updateSettings({ assignmentMode: e.target.value })
               }
-              className="border p-1 ml-2 w-24 rounded"
+              className="ml-2 w-24 rounded"
             >
               <option value="random">Automatic assignment</option>
               <option value="choice">Students choose</option>
@@ -1354,7 +1354,7 @@ function InstructorView() {
                     rounds: Math.max(1, parseInt(e.target.value || 1)),
                   })
                 }
-                className="border p-1 ml-2 w-24 rounded"
+                className="ml-2 w-24"
               />
             </label>
             <p className="text-sm mt-2">
@@ -1374,7 +1374,7 @@ function InstructorView() {
                     minOpenSeconds: Math.max(0, parseInt(e.target.value || 0)),
                   })
                 }
-                className="border p-1 ml-2 w-24 rounded"
+                className="ml-2 w-24"
               />
             </label>
             <p className="text-sm mt-2">
@@ -1402,7 +1402,7 @@ function InstructorView() {
                       },
                     })
                   }
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center w-1/1"
                 />
               </th>
               <th className="w-1/3">
@@ -1416,7 +1416,7 @@ function InstructorView() {
                       },
                     })
                   }
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center w-1/1"
                 />
               </th>
             </tr>
@@ -1434,12 +1434,12 @@ function InstructorView() {
                       },
                     })
                   }
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center w-1/1"
                 />
               </td>
               <td>
                 <input
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center w-1/1"
                   value={pairToStr(payoffs.CC)}
                   onChange={(e) =>
                     updatePayoffCell("CC", parsePair(e.target.value))
@@ -1448,7 +1448,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center w-1/1"
                   value={pairToStr(payoffs.CD)}
                   onChange={(e) =>
                     updatePayoffCell("CD", parsePair(e.target.value))
@@ -1468,12 +1468,12 @@ function InstructorView() {
                       },
                     })
                   }
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center rounded w-1/1"
                 />
               </td>
               <td>
                 <input
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center rounded w-1/1"
                   value={pairToStr(payoffs.DC)}
                   onChange={(e) =>
                     updatePayoffCell("DC", parsePair(e.target.value))
@@ -1482,7 +1482,7 @@ function InstructorView() {
               </td>
               <td>
                 <input
-                  className="border p-1 text-center rounded w-1/1"
+                  className="text-center rounded w-1/1"
                   value={pairToStr(payoffs.DD)}
                   onChange={(e) =>
                     updatePayoffCell("DD", parsePair(e.target.value))
