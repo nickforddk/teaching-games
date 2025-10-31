@@ -259,11 +259,6 @@ body {
           clip-path: circle();
         }
       }
-
-      button {
-        line-height: unset;
-        font-weight: unset;
-      }
     }
     > footer {
       all: unset;
