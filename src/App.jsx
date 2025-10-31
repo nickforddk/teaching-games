@@ -63,7 +63,7 @@ export default function App() {
           <div className="text-sm flex items-center gap-3">
             <span className="text-grey-500 dark:text-grey-400 hidden sm:flex">{authState.user.reloadUserInfo?.screenName}</span>
             {" "}
-            <button onClick={authState.logout} className="px-2 py-1 rounded bg-grey-500 text-white hover:bg-alert hover:text-black active:bg-grey-800 active:text-alert cursor-pointer">Sign out</button>
+            <button onClick={authState.logout} className="btn-sm bg-grey-500 text-white hover:bg-alert hover:text-black active:bg-grey-800 active:text-alert">Sign out</button>
           </div>
         </header>
         <div className="flex items-start justify-center md:p-4 mt-auto mb-auto">
