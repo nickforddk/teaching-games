@@ -114,9 +114,9 @@
   --border-width-xs: 1px;
   --border-width-sm: max(0.1rem, 0.1em);
   --border-width-0: 0;
-  --border-width-1: 0.25rem;
-  --border-width-2: 0.5rem;
-  --border-width-3: 0.75rem;
+  --border-width-1: 0.125rem;
+  --border-width-2: 0.25rem;
+  --border-width-3: 0.5rem;
   --border-width-4: 1rem;
   --border-width-5: 1.25rem;
   --border-width-6: 1.5rem;
@@ -152,11 +152,34 @@
 }
 @layer components {
   input, optgroup, select, textarea {
-    @apply border rounded p-2 leading-[1.25] border-grey-500 bg-white text-grey-900 dark:bg-grey-900 dark:text-white disabled:text-grey-500 disabled:bg-grey-200 disabled:pointer-events-none dark:disabled:bg-grey-700 invalid:border-red-500 hover:border-blue-700 active:border-blue-700 focus:border-blue-700 focus-within:border-blue-700 dark:hover:border-blue-600 dark:active:border-blue-600 dark:focus:border-blue-600 dark:focus-within:border-blue-600;
+    @apply rounded border-1 p-2 leading-[1.25] border-grey-500 bg-white text-grey-900 dark:bg-grey-900 dark:text-white disabled:text-grey-500 disabled:bg-grey-200 disabled:pointer-events-none dark:disabled:bg-grey-700 invalid:border-red-500 hover:border-blue-700 active:border-blue-700 focus:border-blue-700 focus-within:border-blue-700 dark:hover:border-blue-600 dark:active:border-blue-600 dark:focus:border-blue-600 dark:focus-within:border-blue-600;
   }
 
   button {
-    @apply rounded p-2 leading-[1.1] cursor-pointer font-medium bg-blue-700 text-white dark:bg-grey-400 dark:text-blue-800 hover:bg-blue-600 hover:text-white active:bg-blue-500 active:text-blue-300 disabled:bg-grey-300 disabled:text-grey-100 dark:disabled:bg-grey-700 dark:disabled:text-grey-600 disabled:pointer-events-none;
+    @apply rounded border-1 border-transparent p-2 leading-[1.1] cursor-pointer font-medium bg-blue-700 text-white dark:bg-grey-400 dark:text-blue-800 hover:bg-blue-600 hover:text-white active:bg-blue-500 active:text-blue-300 disabled:bg-grey-300 disabled:text-grey-100 dark:disabled:bg-grey-700 dark:disabled:text-grey-600 disabled:pointer-events-none active:inset-shadow-sm;
+
+    &.btn-sm {
+      @apply p-1;
+    }
+    &.btn-selected {
+      @apply bg-blue-500 text-white hover:bg-blue-600 hover:text-white active:bg-blue-500 active:text-blue-300 inset-shadow-sm hover:inset-shadow-none;
+    }
+    &.btn-neutral {
+      @apply bg-transparent text-blue-800 border-blue-800 dark:text-white dark:border-white hover:bg-blue-600 hover:text-white hover:border-transparent active:bg-blue-500 active:text-blue-300 active:border-transparent;
+    }
+    &.btn-go {
+      @apply bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white active:bg-cyan-500 active:text-cyan-300;
+    }
+    &.btn-stop {
+      @apply bg-red-500 text-white hover:bg-red-600 hover:text-white active:bg-red-500 active:text-red-300;
+    }
+    &.btn-alert {
+      @apply bg-alert text-black hover:bg-orange-500 hover:text-white active:bg-black active:text-alert;
+    }
+
+    &:disabled {
+      @apply disabled:border-transparent disabled:bg-grey-300 disabled:text-grey-100 dark:disabled:bg-grey-700 dark:disabled:text-grey-600 disabled:pointer-events-none;
+    }
   }
 
   .cursor-not-allowed {
