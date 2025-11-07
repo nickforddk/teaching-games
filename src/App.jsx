@@ -639,11 +639,6 @@ function StudentView() {
 
           {!gameFinished && (
             <div>
-              {!displayed && (
-                <div className="text-center text-blue-500 font-semibold motion-safe:animate-pulse">
-                  ⏳ Wait for your turn
-                </div>
-              )}
               {displayed?.full && (
                 <div className="overflow-auto">
                   <h3 className="text-grey-500 text-center">
@@ -713,6 +708,12 @@ function StudentView() {
             </div>
           )}
 
+          {!gameFinished && !isMyTurn && (
+            <div className="flex items-center justify-center gap-2 text-base text-blue-500 font-semibold motion-safe:animate-pulse">
+              <i className="icon i-timer"></i> Please wait
+            </div>
+          )}
+
           {!gameFinished && (
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -752,15 +753,15 @@ function StudentView() {
             </div>
           )}
 
-          {!gameFinished && canRevealOpponentChoice && (
-            <div className={`text-center text-base mt-2 ${roleAltClass}`}>
-              👀 Opponent chose: {choiceLabel(role === "A" ? "B" : "A", opponentChoice)}
+          {!gameFinished && (myChoice === 0 || myChoice === 1) && (
+            <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleTableClass}`}>
+              <i className="icon i-tick mr-2"></i> You chose: <span className="font-semibold">{choiceLabel(role, myChoice)}</span>
             </div>
           )}
 
-          {!gameFinished && (myChoice === 0 || myChoice === 1) && (
-            <div className="text-center text-base mt-2">
-              ✅ You chose: {choiceLabel(role, myChoice)}
+          {!gameFinished && canRevealOpponentChoice && (
+            <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleAltClass}bg text-white border-transparent`}>
+              <i className="icon i-other mr-2"></i> Opponent chose: <span className="font-semibold">{choiceLabel(role === "A" ? "B" : "A", opponentChoice)}</span>
             </div>
           )}
 

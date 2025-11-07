@@ -88,7 +88,7 @@ export default function ScreenView() {
   if (!currentGameCode)
     return (
         <div className="w-screen h-screen flex items-center justify-center">
-          <div className="flex flex-col items-center justify-center text-center text-2xl px-6 py-8 bg-grey-700 text-white rounded">
+          <div className="flex flex-col items-center justify-center text-center text-2xl px-6 py-8 bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 rounded">
             <span className="qrcode size-[15rem]"></span>
             git.nickford.com/<span>teaching-games</span>
           </div>
@@ -98,12 +98,12 @@ export default function ScreenView() {
   if (!gameFinished)
     return (
         <div className="w-screen h-screen flex items-center justify-center">
-          <div className="grid grid-rows-2 md:grid-cols-2 md:grid-rows-1 text-center gap-8">
-            <div className="flex flex-col justify-center gap-4 p-8 border border-blue-600 rounded">
-              <h2 className="text-center text-blue-800">Enter game code</h2>
+          <div className="grid grid-rows-2 md:grid-cols-2 md:grid-rows-1 text-center gap-4">
+            <div className="flex flex-col justify-center gap-4 p-8 bg-grey-500 dark:bg-grey-600 text-white rounded">
+              <h2 className="text-center text-white">Enter game code</h2>
               <code className="text-6xl m-1 px-2 py-1">{currentGameCode}</code>
             </div>
-            <div className="flex flex-col items-center justify-center text-center text-2xl px-6 py-8 bg-grey-700 text-white rounded">
+            <div className="flex flex-col items-center justify-center text-center text-2xl/6 px-6 py-8 bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 rounded">
               <span className="qrcode size-[15rem]"></span>
               git.nickford.com/<span>teaching-games</span>
             </div>
@@ -116,8 +116,8 @@ export default function ScreenView() {
     <div className="flex flex-col w-full h-full gap-8 md:flex-row">
       <div className="flex flex-col w-full h-screen space-y-6 mt-auto mb-auto">
         {parsedPayoffs && settings && (
-          <div className="border border-grey-200 rounded px-2 py-4">
-            <table className="w-full text-center text-3xl leading-[1.75]">
+          <div className="border border-grey-500 rounded px-2 py-4">
+            <table className="w-full text-center text-5xl leading-[1.75]">
               <thead>
                 <tr className="text-2xl leading-[1.25]">
                   <th className="font-normal text-base text-grey-500">Payoff matrix (A,B)</th>
@@ -187,9 +187,9 @@ export default function ScreenView() {
           {summaryPairs.length === 0 && <div className="text-center text-sm text-grey">No complete pairs.</div>}
         </div>
       </div>
-      <div className="md:w-xs bg-grey-700 flex md:flex-col gap-4 items-center justify-between rounded">
-          <code className="text-4xl mt-6 mx-4 border px-2 py-1">{currentGameCode}</code>
-          <div className="flex flex-col md:w-full items-center text-center text-md px-4 py-8 bg-grey-700 text-white rounded">
+      <div className="md:w-xs bg-grey-500 dark:bg-grey-600 text-white flex md:flex-col gap-4 items-center justify-between rounded">
+          <code className="text-4xl mt-6 mx-4 px-2 py-1">{currentGameCode}</code>
+          <div className="flex flex-col md:w-full items-center text-center text-md leading-5 px-4 py-8 bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 rounded">
             <span className="qrcode size-[4rem] md:size-[10rem] mb-2"></span>
             git.nickford.com/<span>teaching-games</span>
           </div>

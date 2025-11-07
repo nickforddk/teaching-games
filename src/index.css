@@ -139,6 +139,48 @@
   --radius-1em: 1em;
   --radius-1lh: 1lh;
   --radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --tw-shadow-color: oklch(from var(--color-black) l c h / 0.1);
+  --tw-inset-shadow-color: oklch(from var(--color-black) l c h / 0.1);
+  --tw-drop-shadow-color: oklch(from var(--color-black) l c h / 0.1);
+  --tw-text-shadow-color: oklch(from var(--color-black) l c h / 0.1);
+
+  --shadow-2xs: 0 1px oklch(from var(--color-black) l c h / 0.05);
+  --shadow-xs: 0 0.1rem 0.125rem 0 oklch(from var(--color-black) l c h / 0.05);
+  --shadow-sm: 0 0.1rem 0.175rem 0 oklch(from var(--color-black) l c h / 0.1), 0 0.1rem 0.125rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow: 0 0.125rem 0.25rem 0 oklch(from var(--color-black) l c h / 0.1), 0 0.1rem 0.2rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-md: 0 0.4rem 0.6rem -0.1rem oklch(from var(--color-black) l c h / 0.1), 0 0.2rem 0.4rem -0.2rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-lg: 0 1rem 1.5rem -0.3rem oklch(from var(--color-black) l c h / 0.1), 0 0.4rem 0.6rem -0.4rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-xl: 0 2rem 2.5rem -0.5rem oklch(from var(--color-black) l c h / 0.1), 0 0.8rem 1rem -0.6rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-2xl: 0 2.5rem 5rem -1.5rem oklch(from var(--color-black) l c h / 0.25);
+
+  --inset-shadow-2xs: inset 0 1px oklch(from var(--color-black) l c h / 0.05);
+  --inset-shadow-xs: inset 0 0.1rem 0.125rem 0 oklch(from var(--color-black) l c h / 0.05);
+  --inset-shadow-sm: inset 0 0.1rem 0.175rem 0 oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow: inset 0 0.125rem 0.25rem 0 oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-md: inset 0 0.4rem 0.6rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-lg: inset 0 1rem 1.5rem -0.3rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-xl: inset 0 2rem 2.5rem -0.5rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-2xl: inset 0 2.5rem 5rem -1.5rem oklch(from var(--color-black) l c h / 0.25);
+
+  --shadow-rev2xs: 0 -1px oklch(from var(--color-black) l c h / 0.05);
+  --shadow-revxs: 0 -0.1rem 0.125rem 0 oklch(from var(--color-black) l c h / 0.05);
+  --shadow-revsm: 0 -0.1rem 0.175rem 0 oklch(from var(--color-black) l c h / 0.1), 0 -0.1rem 0.125rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-rev: 0 -0.125rem 0.25rem 0 oklch(from var(--color-black) l c h / 0.1), 0 -0.1rem 0.2rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-revmd: 0 -0.4rem 0.6rem -0.1rem oklch(from var(--color-black) l c h / 0.1), 0 -0.2rem 0.4rem -0.2rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-revlg: 0 -1rem 1.5rem -0.3rem oklch(from var(--color-black) l c h / 0.1), 0 -0.4rem 0.6rem -0.4rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-revxl: 0 -2rem 2.5rem -0.5rem oklch(from var(--color-black) l c h / 0.1), 0 -0.8rem 1rem -0.6rem oklch(from var(--color-black) l c h / 0.1);
+  --shadow-rev2xl: 0 -2.5rem 5rem -1.5rem oklch(from var(--color-black) l c h / 0.25);
+
+  --inset-shadow-rev2xs: inset 0 -1px oklch(from var(--color-black) l c h / 0.05);
+  --inset-shadow-revxs: inset 0 -0.1rem 0.125rem 0 oklch(from var(--color-black) l c h / 0.05);
+  --inset-shadow-revsm: inset 0 -0.1rem 0.175rem 0 oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-rev: inset 0 -0.125rem 0.25rem 0 oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-revmd: inset 0 -0.4rem 0.6rem -0.1rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-revlg: inset 0 -1rem 1.5rem -0.3rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-revxl: inset 0 -2rem 2.5rem -0.5rem oklch(from var(--color-black) l c h / 0.1);
+  --inset-shadow-rev2xl: inset 0 -2.5rem 5rem -1.5rem oklch(from var(--color-black) l c h / 0.25);
 }
 
 @layer base {
@@ -167,6 +209,9 @@
     &.btn-neutral {
       @apply bg-transparent text-blue-800 border-blue-800 dark:text-white dark:border-white hover:bg-blue-600 hover:text-white hover:border-transparent active:bg-blue-500 active:text-blue-300 active:border-transparent;
     }
+    &.btn-subtle {
+      @apply not-hover:not-active:bg-grey-400 not-hover:not-active:text-blue-800 not-hover:not-active:dark:bg-blue-700 not-hover:not-active:dark:text-white;
+    }
     &.btn-go {
       @apply bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white active:bg-cyan-500 active:text-cyan-300;
     }
@@ -184,6 +229,10 @@
 
   .cursor-not-allowed {
     @apply pointer-events-none;
+  }
+
+  code {
+    @apply bg-white text-blue-800 dark:bg-blue-800 dark:text-white ring-3 font-normal tracking-normal rounded-md overflow-hidden;
   }
 }
 
@@ -203,6 +252,9 @@
             linear-gradient(to top, var(--dark), var(--white-00) 50%),
             radial-gradient(circle at top, var(--white-00) 50%, var(--cyan-pr)),
             radial-gradient(circle at bottom right, var(--offblack), var(--blue-d));
+  --icon--info: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E rect %7B clip-path: inset(0px round 14.31px)%3B %7D %3C/style%3E%3Ccircle cx='50' cy='14.31' r='14.31' fill='black'/%3E%3Crect x='35.69' y='35.69' width='28.62' height='64.31' fill='black'/%3E%3C/svg%3E");
+  --icon--alert: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E rect %7B clip-path: inset(0px round 14.31px)%3B %7D %3C/style%3E%3Ccircle cx='50' cy='14.31' r='14.31' fill='black'/%3E%3Crect x='35.69' y='35.69' width='28.62' height='64.31' fill='black'/%3E%3C/svg%3E");
+  --icon--timer: url('data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="outer"><rect x="0" y="0" width="100" height="100" fill="white" /><circle class="ani" cx="50" cy="50" r="42.845" fill="black" /></mask><mask id="cutout"><path d="M 0 0 L 50 0 L 50 50 L 0 100 Z" fill="white" stroke="none" /></mask></defs><circle class="glass" cx="50" cy="50" r="50" fill="black" stroke="none" mask="url(%23outer)" /><circle class="glass" cx="50" cy="50" r="35.69" fill="black" stroke="none" mask="url(%23cutout)" /></svg>');
 }
 
 body {
@@ -352,21 +404,42 @@ body {
   }
 }
 
-code {
-  background-color: light-dark(var(--blue-pr), var(--blue-half));
-  color: var(--white);
-  font-weight: 400;
-  letter-spacing: 0;
-  border-radius: var(--border-rad);
-  overflow: hidden;
-}
-
 .qrcode {
   background: currentColor;
   box-sizing: border-box;
   border-radius: var(--border-rad);
   display: block;
   mask: url(/git_games.svg) no-repeat center / contain;
+}
+
+i.icon {
+  display: inline-block;
+  width: 1lh;
+  height: 1lh;
+  background: currentColor;
+  mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-image: var(--icon--alert);
+
+  &.i-tick {
+    mask-image: var(--icon--tick);
+  }
+  &.i-cross {
+    mask-image: var(--icon--cross);
+  }
+  &.i-info {
+    mask-image: var(--icon--info);
+  }
+  &.i-alert {
+    mask-image: var(--icon--alert);
+  }
+  &.i-timer {
+    mask-image: var(--icon--timer);
+  }
+  &.i-other {
+    mask-image: var(--icon--search);
+  }
 }
 
 table {
