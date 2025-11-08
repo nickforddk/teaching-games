@@ -667,13 +667,10 @@ function StudentView() {
             <div>
               {displayed?.full && (
                 <div className="overflow-auto">
-                  <h3 className="text-grey-500 text-center">
-                    Payoffs (A,B)
-                  </h3>
-                  <table className={`w-full text-center mt-2 ${roleTableClass}`}>
+                  <table className={`w-full text-center table-p-1 ${roleTableClass}`}>
                     <thead>
                       <tr>
-                        <th></th>
+                        <th className="text-xs text-grey-500 font-medium">Payoff matrix (A, B)</th>
                         <th className="playerb">B: {settings.labels?.B?.[0]}</th>
                         <th className="playerb">B: {settings.labels?.B?.[1]}</th>
                       </tr>
@@ -707,11 +704,10 @@ function StudentView() {
               )}
               {displayed?.side && (
                 <div className="overflow-auto">
-                  <h3 className="text-grey-500 text-center">Your payoffs</h3>
-                  <table className={`w-full text-center mt-2 ${roleTableClass}`}>
+                  <table className={`w-full text-center table-p-1 ${roleTableClass}`}>
                     <thead>
                       <tr>
-                        <th></th>
+                        <th className={`text-xs text-grey-500 font-medium ${roleTableClass}`}>Your payoffs</th>
                         <th className="playerb">B: {settings.labels?.B?.[0]}</th>
                         <th className="playerb">B: {settings.labels?.B?.[1]}</th>
                       </tr>
@@ -834,16 +830,13 @@ function StudentView() {
 
 
           {gameFinished && (
-            <div className="mt-2 space-y-4">
+            <div className="space-y-4">
               {payoffs && (
                 <div className="overflow-auto">
-                  <h3 className="text-grey-500 text-center">
-                    Payoff matrix (A,B)
-                  </h3>
-                  <table className={`w-full text-center mt-2 text-base`}>
+                  <table className={`w-full text-center text-base table-p-1`}>
                     <thead>
                       <tr>
-                        <th></th>
+                        <th className="text-xs text-grey-500 font-medium">Payoff matrix (A, B)</th>
                         <th className="playerb">B: {settings.labels?.B?.[0]}</th>
                         <th className="playerb">B: {settings.labels?.B?.[1]}</th>
                       </tr>
@@ -1467,7 +1460,7 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="text-grey-500">Payoff matrix (A,B)</h3>
+        <h3 className="text-grey-500">Payoff matrix (A, B)</h3>
         <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>

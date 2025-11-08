@@ -190,14 +190,14 @@ export default function ScreenView() {
                   <td className="playera py-2 text-2xl leading-[1.25]">A: {settings.labels?.A?.[0]}</td>
                   <td
                     className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
-                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CC')}) / 2)` }} // blue-500 @ alpha
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CC')} / 2))` }} 
                   >
                     {heat.counts.CC > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.CC} times`}>{heat.percent('CC')}</span>}
                     (<span className="playera">{parsedPayoffs.CC[0]}</span>, <span className="playerb">{parsedPayoffs.CC[1]}</span>)
                   </td>
                   <td
                     className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
-                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CD')}) / 2)` }}
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CD')} / 2))` }}
                   >
                     {heat.counts.CD > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.CD} times`}>{heat.percent('CD')}</span>}
                     (<span className="playera">{parsedPayoffs.CD[0]}</span>, <span className="playerb">{parsedPayoffs.CD[1]}</span>)
@@ -207,14 +207,14 @@ export default function ScreenView() {
                   <td className="playera py-2 text-2xl leading-[1.25]">A: {settings.labels?.A?.[1]}</td>
                   <td
                     className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
-                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DC')}) / 2)` }}
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DC')} / 2))` }}
                   >
                     { heat.counts.DC > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.DC} times`}>{heat.percent('DC')}</span>}
                     (<span className="playera">{parsedPayoffs.DC[0]}</span>, <span className="playerb">{parsedPayoffs.DC[1]}</span>)
                   </td>
                   <td
                     className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
-                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DD')}) / 2)` }}
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DD')} / 2))` }}
                   >
                     { heat.counts.DD > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.DD} times`}>{heat.percent('DD')}</span>}
                     (<span className="playera">{parsedPayoffs.DD[0]}</span>, <span className="playerb">{parsedPayoffs.DD[1]}</span>)
@@ -227,19 +227,19 @@ export default function ScreenView() {
 
         <div className="h-full space-y-1 overflow-auto snap-y snap-proximity rounded">
           {summaryPairs.map(p => (
-            <div key={p.index} className="flex bg-blue-100 even:bg-blue-200 p-4 snap-start overflow-auto">
+            <div key={p.index} className="flex bg-blue-100 even:bg-blue-200 p-4 snap-start overflow-auto rounded">
               <h4 title={`${p.aName} (A) vs ${p.bName} (B)`} className="font-semibold mb-4 tabular-nums w-[10rem]">
                 Pair {p.index}
               </h4>
-              <table className="w-full text-center">
+              <table className="w-full text-center table-p-1">
                 <thead className="bg-white">
                   <tr>
                     <th>Round</th>
-                    <th>A choice</th>
-                    <th>B choice</th>
+                    <th>A's choice</th>
+                    <th>B's choice</th>
                     <th>Quadrant</th>
-                    <th>A payoff</th>
-                    <th>B payoff</th>
+                    <th>A's payoff</th>
+                    <th>B's payoff</th>
                   </tr>
                 </thead>
                 <tbody>
