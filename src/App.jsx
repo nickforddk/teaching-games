@@ -881,7 +881,7 @@ function StudentView() {
                    return (
                      <div
                        key={`${p.index}-${isMine ? 'mine' : 'other'}`}
-                       className={`rounded overflow-auto p-2 ${isMine ? "bg-blue-500 text-white" : "bg-blue-200 text-blue-800 dark:bg-blue-700 dark:text-white"}`}
+                       className={`rounded overflow-auto p-2 ${isMine ? "bg-blue-500 text-white" : "bg-blue-100 even:bg-blue-200 text-blue-800 dark:bg-blue-700 dark:even:bg-blue-800 dark:text-white"}`}
                      >
                        <h4 className="font-semibold mb-4 tabular-nums">{heading}</h4>
                        <table className="w-full text-(length:--font-size--fineprint) md:text-sm text-center table-p-1">
