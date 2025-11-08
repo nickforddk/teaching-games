@@ -1335,8 +1335,8 @@ function InstructorView() {
           {/* Always show manual override button (even when autoProgress is on) */}
           <button
             onClick={endOrNextRound}
-            disabled={!currentScreenGame || !gameCode}
-            className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "btn-go" : "btn-stop"}`}
+            disabled={!gameCode}
+            className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "" : "btn-subtle"}`}
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
             {settings.rounds > 1 && settings.currentRound < settings.rounds ? "Next round" : "End game"}
@@ -1344,7 +1344,7 @@ function InstructorView() {
           <button
             onClick={toggleScreen}
             disabled={!gameCode && !currentScreenGame}
-            className={`p-3 rounded flex-1 ${currentScreenGame === gameCode ? "btn-stop" : "btn-go"}`}
+            className={`p-3 rounded flex-1 ${currentScreenGame ? "" : "btn-subtle"}`}
             title="Enable or disable the screen view (aborts current game)"
           >
             {currentScreenGame === gameCode

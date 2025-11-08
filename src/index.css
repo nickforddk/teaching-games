@@ -210,7 +210,7 @@
       @apply bg-transparent text-blue-800 border-blue-800 dark:text-white dark:border-white hover:bg-blue-600 hover:text-white hover:border-transparent active:bg-blue-500 active:text-blue-300 active:border-transparent;
     }
     &.btn-subtle {
-      @apply not-hover:not-active:bg-grey-400 not-hover:not-active:text-blue-800 not-hover:not-active:dark:bg-blue-700 not-hover:not-active:dark:text-white;
+      @apply not-disabled:not-hover:not-active:bg-grey-400 not-disabled:not-hover:not-active:text-blue-800 not-disabled:not-hover:not-active:dark:bg-blue-700 not-disabled:not-hover:not-active:dark:text-white;
     }
     &.btn-go {
       @apply bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white active:bg-cyan-500 active:text-cyan-300;
