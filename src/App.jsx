@@ -963,6 +963,7 @@ function InstructorView() {
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
   const prevCompletedRef = useRef(undefined);
   const [currentScreenGame, setCurrentScreenGame] = useState(null);
+  const [lastRoundCompleted, setLastRoundCompleted] = useState(false);
   // NEW: track startedAt + completion state of current round
   const [currentRoundStartedAt, setCurrentRoundStartedAt] = useState(null); // NEW
   const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false); // NEW
@@ -1293,9 +1294,11 @@ function InstructorView() {
 
   // Toggle screen (public /screen view)
   const toggleScreen = async () => {
-    if (!gameCode) return alert("Enter a game code first");
     try {
       if (currentScreenGame === gameCode) {
+        await remove(ref(db, "currentGame"));            // disables
+        alert("Screen disabled.");
+      } else if (currentScreenGame && !gameCode) {
         await remove(ref(db, "currentGame"));            // disables
         alert("Screen disabled.");
       } else {
@@ -1323,33 +1326,40 @@ function InstructorView() {
         <div className="flex gap-2">
           <button
             onClick={startNewGame}
-            className="p-3 rounded flex-1 bg-cyan-500 dark:bg-cyan-400 dark:text-cyan-700 hover:bg-cyan-600 hover:text-white active:bg-grey-400 active:text-grey-100 text-white"
+            disabled={!gameCode}
+            className={`p-3 rounded flex-1 ${currentScreenGame === gameCode || players.length > 0 ? "btn-stop" : "btn-go"}`}
+            title="Start a new game or restart a game already under way (forces users to re-join)"
           >
-            Start / reset game
+            {currentScreenGame === gameCode || players.length > 0 ? "Reset game" : "Start game"}
           </button>
           {/* Always show manual override button (even when autoProgress is on) */}
           <button
             onClick={endOrNextRound}
-            className="p-3 rounded flex-1"
+            disabled={!currentScreenGame || !gameCode}
+            className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "btn-go" : "btn-stop"}`}
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
-            End / next round
+            {settings.rounds > 1 && settings.currentRound < settings.rounds ? "Next round" : "End game"}
           </button>
           <button
             onClick={toggleScreen}
-            disabled={!gameCode}
-            className={`p-3 rounded flex-1 ${gameCode ? "" : "cursor-not-allowed"}`}
-            title="Enable or disable the public /screen view for this game code"
+            disabled={!gameCode && !currentScreenGame}
+            className={`p-3 rounded flex-1 ${currentScreenGame === gameCode ? "btn-stop" : "btn-go"}`}
+            title="Enable or disable the screen view (aborts current game)"
           >
-            {currentScreenGame === gameCode ? "Disable screen" : "Enable screen"}
+            {currentScreenGame === gameCode
+              ? "Disable screen"
+              : currentScreenGame
+                ? "Disable screen"
+                : "Enable screen"}
           </button>
         </div>
-        {gameCode && (
+        {(gameCode || currentScreenGame) && (
           <p className="text-xs text-grey-500 mt-1">
             Screen status: {currentScreenGame === gameCode
               ? "Broadcasting this game"
               : currentScreenGame
-                ? `Broadcasting another game (${currentScreenGame})`
+                ? `Broadcasting game (${currentScreenGame})`
                 : "Inactive"}
           </p>
         )}
@@ -1594,7 +1604,7 @@ function InstructorView() {
           </button>
           <button
             onClick={wipeAllGames}
-            className="p-3 rounded bg-alert text-black hover:bg-orange-500 hover:text-white active:bg-black active:text-alert"
+            className="p-3 rounded btn-alert"
           >
             Wipe <strong>ALL</strong> games
           </button>

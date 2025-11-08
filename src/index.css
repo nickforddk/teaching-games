@@ -204,7 +204,7 @@
       @apply p-1;
     }
     &.btn-selected {
-      @apply bg-blue-500 text-white hover:bg-blue-600 hover:text-white active:bg-blue-500 active:text-blue-300 inset-shadow-sm hover:inset-shadow-none;
+      @apply bg-blue-500 text-white hover:bg-blue-600 hover:text-white active:bg-blue-500 active:text-blue-300 inset-shadow-sm hover:inset-shadow-none disabled:inset-shadow-none;
     }
     &.btn-neutral {
       @apply bg-transparent text-blue-800 border-blue-800 dark:text-white dark:border-white hover:bg-blue-600 hover:text-white hover:border-transparent active:bg-blue-500 active:text-blue-300 active:border-transparent;
