@@ -178,6 +178,7 @@ function StudentView() {
         assignmentMode: "random",
         sequential: false,
         revealPayoffs: false,
+        revealChoices: false,
         autoProgress: false,
         rounds: 1,
         currentRound: 1,
@@ -328,6 +329,31 @@ function StudentView() {
   // Game finished?
   const gameFinished =
     !!settings && settings.currentRound === settings.rounds && lastRoundCompleted;
+
+  // NEW: Running log of prior rounds' choices (persist after round advances)
+  const runningLog = useMemo(() => {
+    if (!fullGameSnapshot || !playerKey || !settings) return [];
+    const roundsObj = fullGameSnapshot.rounds || {};
+    const currentR = settings.currentRound || 1;
+    const opp = opponentKey;
+    const items = Object.keys(roundsObj)
+      .map((k) => Number(k))
+      .filter((r) => Number.isFinite(r) && r > 0 && r < currentR) // only completed/past rounds
+      .sort((a, b) => a - b)
+      .map((r) => {
+        const rPlayers = roundsObj[r]?.players || {};
+        const me = rPlayers[playerKey];
+        const them = opp ? rPlayers[opp] : null;
+        return {
+          round: r,
+          myChoice: me?.choice,
+          oppChoice: them?.choice,
+        };
+      })
+      // Keep entries where at least one choice was made (avoid empty lines)
+      .filter((it) => it.myChoice === 0 || it.myChoice === 1 || it.oppChoice === 0 || it.oppChoice === 1);
+    return items;
+  }, [fullGameSnapshot, playerKey, opponentKey, settings]);
 
   // Payoff visibility
   const getDisplayedPayoffs = () => {
@@ -523,8 +549,8 @@ function StudentView() {
   // Opponent choice visibility
   const canRevealOpponentChoice = (() => {
     if (!opponentKey) return false;
-    if (settings?.sequential) return opponentChoice === 0 || opponentChoice === 1;
-    return (currentRoundCompleted || gameFinished) && (opponentChoice === 0 || opponentChoice === 1);
+    if (settings?.revealChoices || settings?.sequential) return opponentChoice === 0 || opponentChoice === 1;
+    return (currentRoundCompleted || gameFinished) && (opponentChoice === 0 || opponentChoice === 1) && (myChoice === 0 || myChoice === 1);
   })();
 
   const roleTableClass =
@@ -620,7 +646,7 @@ function StudentView() {
             {!gameFinished && (
               <div className="flex md:flex-1 flex-col items-center text-base bg-grey-500 text-white tabular-nums rounded p-2">
                 Round 
-                <span className="text-2xl text-grey-200"><span className="font-bold text-white">{Math.min(currentRound, settings?.rounds || 1)}</span> /{" "}
+                <span className="font-bold text-2xl text-grey-200"><span className="text-white">{Math.min(currentRound, settings?.rounds || 1)}</span> /{" "}
                 {settings?.rounds || 1}</span>
               </div>
             )}
@@ -656,22 +682,22 @@ function StudentView() {
                       <tr>
                         <td className="playera">A: {settings.labels?.A?.[0]}</td>
                         <td>
-                          (<span className="playera">{displayed.full.CC[0]}</span>,
+                          (<span className="playera">{displayed.full.CC[0]}</span>,&#32;
                            <span className="playerb">{displayed.full.CC[1]}</span>)
                         </td>
                         <td>
-                          (<span className="playera">{displayed.full.CD[0]}</span>,
+                          (<span className="playera">{displayed.full.CD[0]}</span>,&#32;
                            <span className="playerb">{displayed.full.CD[1]}</span>)
                         </td>
                       </tr>
                       <tr>
                         <td className="playera">A: {settings.labels?.A?.[1]}</td>
                         <td>
-                          (<span className="playera">{displayed.full.DC[0]}</span>,
+                          (<span className="playera">{displayed.full.DC[0]}</span>,&#32;
                            <span className="playerb">{displayed.full.DC[1]}</span>)
                         </td>
                         <td>
-                          (<span className="playera">{displayed.full.DD[0]}</span>,
+                          (<span className="playera">{displayed.full.DD[0]}</span>,&#32;
                            <span className="playerb">{displayed.full.DD[1]}</span>)
                         </td>
                       </tr>
@@ -708,62 +734,104 @@ function StudentView() {
             </div>
           )}
 
-          {!gameFinished && !isMyTurn && (
-            <div className="flex items-center justify-center gap-2 text-base text-blue-500 font-semibold motion-safe:animate-pulse">
-              <i className="icon i-timer"></i> Please wait
-            </div>
-          )}
-
           {!gameFinished && (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => submitChoice(0)}
-                disabled={
-                  gameFinished ||
-                  !isMyTurn ||
-                  myChoice === 0 ||
-                  myChoice === 1 ||
-                  currentRound > (settings?.rounds || 1)
-                }
-                className={`p-3 rounded ${
-                  isMyTurn
-                    ? "cursor-allowed"
-                    : "cursor-not-allowed"
-                }`}
-              >
-                {settings?.labels?.[role]?.[0] ?? "Option 1"}
-              </button>
-              <button
-                onClick={() => submitChoice(1)}
-                disabled={
-                  gameFinished ||
-                  !isMyTurn ||
-                  myChoice === 0 ||
-                  myChoice === 1 ||
-                  currentRound > (settings?.rounds || 1)
-                }
-                className={`p-3 rounded ${
-                  isMyTurn
-                    ? "cursor-allowed"
-                    : "cursor-not-allowed"
-                }`}
-              >
-                {settings?.labels?.[role]?.[1] ?? "Option 2"}
-              </button>
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => submitChoice(0)}
+                  disabled={
+                    gameFinished ||
+                    !isMyTurn ||
+                    myChoice === 0 ||
+                    myChoice === 1 ||
+                    currentRound > (settings?.rounds || 1)
+                  }
+                  className={`p-3 rounded ${
+                    isMyTurn
+                      ? "cursor-allowed"
+                      : "cursor-not-allowed"
+                  }`}
+                >
+                  {settings?.labels?.[role]?.[0] ?? "Option 1"}
+                </button>
+                <button
+                  onClick={() => submitChoice(1)}
+                  disabled={
+                    gameFinished ||
+                    !isMyTurn ||
+                    myChoice === 0 ||
+                    myChoice === 1 ||
+                    currentRound > (settings?.rounds || 1)
+                  }
+                  className={`p-3 rounded ${
+                    isMyTurn
+                      ? "cursor-allowed"
+                      : "cursor-not-allowed"
+                  }`}
+                >
+                  {settings?.labels?.[role]?.[1] ?? "Option 2"}
+                </button>
+              </div>
+
+              {/* NEW: Running log of previous rounds (hidden when game ends) */}
+              {runningLog.length > 0 && (settings?.revealChoices || settings?.sequential) && (
+                <div className="mt-2 border border-blue-500 rounded p-2">
+                  <div className="grid grid-cols-3 gap-2 text-base">
+                    <div className="grid grid-cols-subgrid gap-2 col-span-full items-center justify-items-center">
+                      <span></span>
+                      <div className={`${roleTableClass} ${role === "A" ? "order-2" : "order-3"} font-semibold`}>You</div>
+                      <div className={`${roleAltClass} ${role === "A" ? "order-3" : "order-2"} font-semibold`}>Opponent</div>
+                    </div>
+                    {runningLog.map((it) => {
+                      const myOrder = role === "A" ? "2" : "3";
+                      const oppOrder = role === "A" ? "3" : "2";
+                      const oppRole = role === "A" ? "B" : role === "B" ? "A" : "?";
+                      const myLabel =
+                        it.myChoice === 0 || it.myChoice === 1
+                          ? choiceLabel(role, it.myChoice)
+                          : "—";
+                      const oppLabel =
+                        it.oppChoice === 0 || it.oppChoice === 1
+                          ? choiceLabel(oppRole, it.oppChoice)
+                          : "—";
+                      return (
+                        <div key={`rlog-${it.round}`} className="grid group grid-cols-subgrid gap-2 col-span-full items-center justify-items-center text-sm">
+                          <h4 className="justify-self-start tabular-nums text-grey-500 group-last:text-blue-500">Round {it.round}</h4>
+                          <div className={`order-${myOrder}`}>{myLabel}</div>
+                          <div className={`order-${oppOrder}`}>{oppLabel}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2">
+                {(myChoice === 0 || myChoice === 1) && (
+                  <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleTableClass}`}>
+                    <i className="icon i-self ml-1 mr-2"></i> You chose: <span className="font-semibold">{choiceLabel(role, myChoice)}</span>
+                  </div>
+                )}
+
+                {canRevealOpponentChoice && (settings?.sequential || (myChoice === 0 || myChoice === 1)) && (
+                  <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleAltClass}bg text-white border-transparent`}>
+                    <i className="icon i-other ml-1 mr-2"></i> Opponent chose: <span className="font-semibold">{choiceLabel(role === "A" ? "B" : "A", opponentChoice)}</span>
+                  </div>
+                )}
+
+                {!isMyTurn && (
+                  <div className="flex items-center gap-1 text-base border p-2 rounded text-blue-500 font-semibold">
+                    <i className="inline-flex items-center justify-center w-[1em] h-[1em] ml-1 mr-2 relative">
+                      <span className="absolute inline-flex size-[0.8em] top-[0.1em] left-[0.1em] motion-safe:animate-ping rounded-full border-1 border-blue-500"></span>
+                      <span className="absolute inline-flex size-[0.5em] top-[0.25em] left-[0.25em] rounded-full bg-blue-500 motion-safe:animate-pulse"></span>
+                    </i>
+                    <span className="motion-safe:animate-pulse">Please wait</span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
-          {!gameFinished && (myChoice === 0 || myChoice === 1) && (
-            <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleTableClass}`}>
-              <i className="icon i-tick mr-2"></i> You chose: <span className="font-semibold">{choiceLabel(role, myChoice)}</span>
-            </div>
-          )}
-
-          {!gameFinished && canRevealOpponentChoice && (
-            <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleAltClass}bg text-white border-transparent`}>
-              <i className="icon i-other mr-2"></i> Opponent chose: <span className="font-semibold">{choiceLabel(role === "A" ? "B" : "A", opponentChoice)}</span>
-            </div>
-          )}
 
           {gameFinished && (
             <div className="mt-2 space-y-4">
@@ -884,6 +952,7 @@ function InstructorView() {
     assignmentMode: "random",
     sequential: false,
     revealPayoffs: false,
+    revealChoices: false,
     autoProgress: false,
     rounds: 1,
     currentRound: 1,
@@ -916,6 +985,7 @@ function InstructorView() {
         assignmentMode: "random",
         sequential: false,
         revealPayoffs: false,
+        revealChoices: false,
         autoProgress: false,
         rounds: 1,
         currentRound: 1,
@@ -1327,6 +1397,16 @@ function InstructorView() {
               }
             />{" "}
             Reveal payoffs to students?
+          </label>
+          <label className="block mt-2">
+            <input
+              type="checkbox"
+              checked={!!settings.revealChoices}
+              onChange={(e) =>
+                updateSettings({ revealChoices: e.target.checked })
+              }
+            />{" "}
+            Reveal choices?
           </label>
           <label className="block mt-2">
             <input

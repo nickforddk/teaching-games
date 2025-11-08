@@ -47,6 +47,66 @@ export default function ScreenView() {
     return !!rounds?.[settings.rounds]?.completed;
   }, [settings, rounds]);
 
+  // NEW: heatmap counts, shares, and opacity scaler for CC/CD/DC/DD
+  const heat = useMemo(() => {
+    const counts = { CC: 0, CD: 0, DC: 0, DD: 0 };
+    if (!players || !rounds || !settings) {
+      return {
+        counts,
+        shares: { CC: 0, CD: 0, DC: 0, DD: 0 },
+        alpha: () => 0,
+        percent: () => '0%',
+      };
+    }
+
+    const arr = Object.entries(players).map(([k, v]) => ({ key: k, ...v }));
+    const A = arr.filter(p => p.role === 'A').map(p => p.key);
+    const B = arr.filter(p => p.role === 'B').map(p => p.key);
+    const n = Math.min(A.length, B.length);
+
+    const payoffKey = (a, b) =>
+      a === 0 && b === 0 ? 'CC' :
+      a === 0 && b === 1 ? 'CD' :
+      a === 1 && b === 0 ? 'DC' : 'DD';
+
+    // Count outcomes across all formed pairs and all rounds up to currentRound
+    const upTo = Math.max(1, Number(settings.currentRound) || 1);
+    for (let i = 0; i < n; i++) {
+      const aKey = A[i], bKey = B[i];
+      for (let r = 1; r <= upTo; r++) {
+        const rp = rounds?.[r]?.players || {};
+        const aC = rp[aKey]?.choice;
+        const bC = rp[bKey]?.choice;
+        if (aC != null && bC != null) {
+          counts[payoffKey(aC, bC)] += 1;
+        }
+      }
+    }
+
+    const nonZero = Object.values(counts).filter(c => c > 0);
+    const min = nonZero.length ? Math.min(...nonZero) : 0;
+    const max = nonZero.length ? Math.max(...nonZero) : 0;
+
+    const alpha = (k) => {
+      const c = counts[k] || 0;
+      if (c === 0) return 0.05; // very faint if never selected
+      if (min === max) return 1; // all equal, show full
+      return 0.25 + ((c - min) / (max - min)) * 0.75; // 0.25..1
+    };
+
+    // NEW: percentage shares per quadrant
+    const keys = ['CC', 'CD', 'DC', 'DD'];
+    const total = keys.reduce((s, k) => s + (counts[k] || 0), 0);
+    const shares = keys.reduce((acc, k) => {
+      acc[k] = total > 0 ? (counts[k] || 0) / total : 0;
+      return acc;
+    }, /** @type {Record<string, number>} */ ({}));
+
+    const percent = (k, digits = 0) => `${(shares[k] * 100).toFixed(digits)}%`;
+
+    return { counts, shares, alpha, percent };
+  }, [players, rounds, settings]);
+
   const summaryPairs = useMemo(() => {
     if (!gameFinished || !players || !rounds || !parsedPayoffs || !settings) return [];
     const arr = Object.entries(players).map(([k, v]) => ({ key: k, ...v }));
@@ -113,37 +173,61 @@ export default function ScreenView() {
   ;
 
   return (
-    <div className="flex flex-col w-full h-full gap-8 md:flex-row">
+    <div className="flex flex-col w-full h-full gap-8 md:flex-row cursor-default">
       <div className="flex flex-col w-full h-screen space-y-6 mt-auto mb-auto">
         {parsedPayoffs && settings && (
-          <div className="border border-grey-500 rounded px-2 py-4">
-            <table className="w-full text-center text-5xl leading-[1.75]">
+          <div className="border border-grey-500 rounded p-2">
+            <table className="w-full text-center text-5xl leading-[1.75] border-separate table-fixed">
               <thead>
                 <tr className="text-2xl leading-[1.25]">
-                  <th className="font-normal text-base text-grey-500">Payoff matrix (A,B)</th>
-                  <th className="playerb">B: {settings.labels?.B?.[0]}</th>
-                  <th className="playerb">B: {settings.labels?.B?.[1]}</th>
+                  <th className="font-normal text-base text-grey-500">Payoff matrix (A, B)</th>
+                  <th className="playerb py-2">B: {settings.labels?.B?.[0]}</th>
+                  <th className="playerb py-2">B: {settings.labels?.B?.[1]}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="playera text-2xl leading-[1.25]">A: {settings.labels?.A?.[0]}</td>
-                  <td>(<span className="playera">{parsedPayoffs.CC[0]}</span>, <span className="playerb">{parsedPayoffs.CC[1]}</span>)</td>
-                  <td>(<span className="playera">{parsedPayoffs.CD[0]}</span>, <span className="playerb">{parsedPayoffs.CD[1]}</span>)</td>
+                  <td className="playera py-2 text-2xl leading-[1.25]">A: {settings.labels?.A?.[0]}</td>
+                  <td
+                    className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CC')}) / 2)` }} // blue-500 @ alpha
+                  >
+                    {heat.counts.CC > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.CC} times`}>{heat.percent('CC')}</span>}
+                    (<span className="playera">{parsedPayoffs.CC[0]}</span>, <span className="playerb">{parsedPayoffs.CC[1]}</span>)
+                  </td>
+                  <td
+                    className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('CD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('CD')}) / 2)` }}
+                  >
+                    {heat.counts.CD > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.CD} times`}>{heat.percent('CD')}</span>}
+                    (<span className="playera">{parsedPayoffs.CD[0]}</span>, <span className="playerb">{parsedPayoffs.CD[1]}</span>)
+                  </td>
                 </tr>
                 <tr>
-                  <td className="playera text-2xl leading-[1.25]">A: {settings.labels?.A?.[1]}</td>
-                  <td>(<span className="playera">{parsedPayoffs.DC[0]}</span>, <span className="playerb">{parsedPayoffs.DC[1]}</span>)</td>
-                  <td>(<span className="playera">{parsedPayoffs.DD[0]}</span>, <span className="playerb">{parsedPayoffs.DD[1]}</span>)</td>
+                  <td className="playera py-2 text-2xl leading-[1.25]">A: {settings.labels?.A?.[1]}</td>
+                  <td
+                    className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DC')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DC')}) / 2)` }}
+                  >
+                    { heat.counts.DC > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.DC} times`}>{heat.percent('DC')}</span>}
+                    (<span className="playera">{parsedPayoffs.DC[0]}</span>, <span className="playerb">{parsedPayoffs.DC[1]}</span>)
+                  </td>
+                  <td
+                    className="rounded-lg border scale-(--force-scale) hover:scale-100 transition-all cursor-pointer"
+                    style={{ borderColor: `oklch(from var(--color-blue-700) l c h / ${heat.alpha('DD')})`, "--force-scale": `calc(0.5 + (${heat.alpha('DD')}) / 2)` }}
+                  >
+                    { heat.counts.DD > 0 && <span className="rounded-full text-sm font-bold tabular-nums absolute -left-[0.125rem] top-1/2 -translate-1/2 bg-white border-2 border-inherit p-1 cursor-help" title={`Selected ${heat.counts.DD} times`}>{heat.percent('DD')}</span>}
+                    (<span className="playera">{parsedPayoffs.DD[0]}</span>, <span className="playerb">{parsedPayoffs.DD[1]}</span>)
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         )}
 
-        <div className="space-y-1 overflow-auto">
+        <div className="h-full space-y-1 overflow-auto snap-y snap-proximity rounded">
           {summaryPairs.map(p => (
-            <div key={p.index} className="flex rounded bg-blue-100 p-4 overflow-auto">
+            <div key={p.index} className="flex bg-blue-100 even:bg-blue-200 p-4 snap-start overflow-auto">
               <h4 title={`${p.aName} (A) vs ${p.bName} (B)`} className="font-semibold mb-4 tabular-nums w-[10rem]">
                 Pair {p.index}
               </h4>
