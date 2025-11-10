@@ -85,7 +85,7 @@ export default function ScreenView() {
     return () => { cancelled = true; if (t) clearTimeout(t); };
   }, [isEmbedded, currentGameCode, connected]);
 
-  const { settings, payoffs, players, rounds } = gameSnapshot || {};
+  const { settings, payoffs, players, rounds, pairs } = gameSnapshot || {};
 
   const parsedPayoffs = useMemo(() => {
     if (!payoffs) return null;
@@ -115,24 +115,23 @@ export default function ScreenView() {
       };
     }
 
-    const arr = Object.entries(players).map(([k, v]) => ({ key: k, ...v }));
-    const A = arr.filter(p => p.role === 'A').map(p => p.key);
-    const B = arr.filter(p => p.role === 'B').map(p => p.key);
-    const n = Math.min(A.length, B.length);
-
     const payoffKey = (a, b) =>
       a === 0 && b === 0 ? 'CC' :
       a === 0 && b === 1 ? 'CD' :
       a === 1 && b === 0 ? 'DC' : 'DD';
 
-    // Count outcomes across all formed pairs and all rounds up to currentRound
+    // Use persistent pairs
+    const pairsList = Object.entries(pairs || {})
+      .map(([k, v]) => ({ key: k, A: v?.A, B: v?.B }))
+      .filter(p => p.A && p.B)
+      .sort((a, b) => Number(a.key) - Number(b.key)); // stable order
+
     const upTo = Math.max(1, Number(settings.currentRound) || 1);
-    for (let i = 0; i < n; i++) {
-      const aKey = A[i], bKey = B[i];
+    for (const p of pairsList) {
       for (let r = 1; r <= upTo; r++) {
         const rp = rounds?.[r]?.players || {};
-        const aC = rp[aKey]?.choice;
-        const bC = rp[bKey]?.choice;
+        const aC = rp[p.A]?.choice;
+        const bC = rp[p.B]?.choice;
         if (aC != null && bC != null) {
           counts[payoffKey(aC, bC)] += 1;
         }
@@ -145,12 +144,11 @@ export default function ScreenView() {
 
     const alpha = (k) => {
       const c = counts[k] || 0;
-      if (c === 0) return 0.05; // very faint if never selected
-      if (min === max) return 1; // all equal, show full
-      return 0.25 + ((c - min) / (max - min)) * 0.75; // 0.25..1
+      if (c === 0) return 0.05;
+      if (min === max) return 1;
+      return 0.25 + ((c - min) / (max - min)) * 0.75;
     };
 
-    // NEW: percentage shares per quadrant
     const keys = ['CC', 'CD', 'DC', 'DD'];
     const total = keys.reduce((s, k) => s + (counts[k] || 0), 0);
     const shares = keys.reduce((acc, k) => {
@@ -161,37 +159,40 @@ export default function ScreenView() {
     const percent = (k, digits = 0) => `${(shares[k] * 100).toFixed(digits)}%`;
 
     return { counts, shares, alpha, percent };
-  }, [players, rounds, settings]);
+  }, [players, rounds, settings, pairs]);
 
   const summaryPairs = useMemo(() => {
     if (!gameFinished || !players || !rounds || !parsedPayoffs || !settings) return [];
-    const arr = Object.entries(players).map(([k, v]) => ({ key: k, ...v }));
-    const A = arr.filter(p => p.role === "A").map(p => p.key);
-    const B = arr.filter(p => p.role === "B").map(p => p.key);
-    const n = Math.min(A.length, B.length);
+    // Use persistent pairs
+    const pairsList = Object.entries(pairs || {})
+      .map(([k, v]) => ({ key: k, A: v?.A, B: v?.B }))
+      .filter(p => p.A && p.B)
+      .sort((a, b) => Number(a.key) - Number(b.key));
+
     const payoffKey = (a,b) => (a===0&&b===0?"CC":a===0&&b===1?"CD":a===1&&b===0?"DC":"DD");
     const symbol = (a,b) => (a===0&&b===0?"▘":a===0&&b===1?"▝":a===1&&b===0?"▖":"▗");
+
     const out = [];
-    for (let i=0;i<n;i++){
-      const aKey = A[i], bKey = B[i];
-      let totalA=0,totalB=0;
-      const perRound=[];
-      for (let r=1;r<=settings.rounds;r++){
+    for (let i = 0; i < pairsList.length; i++) {
+      const { A: aKey, B: bKey } = pairsList[i];
+      let totalA = 0, totalB = 0;
+      const perRound = [];
+      for (let r = 1; r <= settings.rounds; r++) {
         const rp = rounds?.[r]?.players || {};
         const aC = rp[aKey]?.choice;
         const bC = rp[bKey]?.choice;
-        let cell=null,pA=0,pB=0;
-        if (aC!=null && bC!=null){
-          const k = payoffKey(aC,bC);
-          pA = parsedPayoffs[k]?.[0]||0;
-            pB = parsedPayoffs[k]?.[1]||0;
-          totalA+=pA; totalB+=pB;
-          cell = symbol(aC,bC);
+        let cell = null, pA = 0, pB = 0;
+        if (aC != null && bC != null) {
+          const k = payoffKey(aC, bC);
+          pA = parsedPayoffs[k]?.[0] || 0;
+          pB = parsedPayoffs[k]?.[1] || 0;
+          totalA += pA; totalB += pB;
+          cell = symbol(aC, bC);
         }
-        perRound.push({ round:r, aChoice:aC, bChoice:bC, cell, payoffA:pA, payoffB:pB });
+        perRound.push({ round: r, aChoice: aC, bChoice: bC, cell, payoffA: pA, payoffB: pB });
       }
       out.push({
-        index:i+1,
+        index: i + 1,
         aName: players[aKey]?.name || "A?",
         bName: players[bKey]?.name || "B?",
         rounds: perRound,
@@ -199,7 +200,7 @@ export default function ScreenView() {
       });
     }
     return out;
-  }, [gameFinished, players, rounds, parsedPayoffs, settings]);
+  }, [gameFinished, players, rounds, parsedPayoffs, settings, pairs]);
 
   if (!currentGameCode)
     return (

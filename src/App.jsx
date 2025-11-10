@@ -50,7 +50,7 @@ export default function App() {
         <div className="p-8 bg-alert rounded-lg border-xs border-orange-500/25 shadow shadow-orange-500/50 text-black space-y-4 text-center my-auto">
           <h2 className="text-xl font-bold text-black">Not authorised</h2>
           <p className="text-sm">This GitHub account does not have access to this app.</p>
-          <button onClick={authState.logout} className="py-2 px-3 rounded bg-black text-white hover:bg-orange-600 active:bg-orange-500 active:text-alert">
+          <button onClick={authState.logout} className="py-2 px-3 rounded bg-black text-white hover:bg-alert hover:text-black active:bg-grey-800 active:text-alert">
             Sign out
           </button>
         </div>
@@ -142,6 +142,8 @@ function StudentView() {
   const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false);
   const [resetNotice, setResetNotice] = useState(""); // NEW: message when instructor resets users
   const [uid, setUid] = useState(null);
+  // NEW: persistent pairs for this game
+  const [pairsObj, setPairsObj] = useState({});
 
   // Auth state change listener
   useEffect(() => {
@@ -288,43 +290,42 @@ function StudentView() {
     setMyChoice(me ? me.choice : null);
   }, [roundPlayers, playerKey]);
 
-  // Pairing
-  const Aglobal = globalPlayers.filter((p) => p.role === "A").map((p) => p.key);
-  const Bglobal = globalPlayers.filter((p) => p.role === "B").map((p) => p.key);
-  const myIndex = playerKey
-    ? role === "A"
-      ? Aglobal.indexOf(playerKey)
-      : Bglobal.indexOf(playerKey)
-    : -1;
-  const pairedAKey = role === "B" && myIndex >= 0 ? Aglobal[myIndex] : null;
-  const pairedBKey = role === "A" && myIndex >= 0 ? Bglobal[myIndex] : null;
+  // Subscribe to pairs for this game
+  useEffect(() => {
+    if (!gameCode) {
+      setPairsObj({});
+      return () => {};
+    }
+    const pr = ref(db, `games/${gameCode}/pairs`);
+    const unsub = onValue(pr, (snap) => setPairsObj(snap.val() || {}));
+    return () => unsub();
+  }, [gameCode]);
 
-  // Opponent
-  const opponentKey = (() => {
+  // REMOVE old index-based pairing (Aglobal/Bglobal/myIndex/pairedAKey/pairedBKey)
+  // REPLACE pairing + opponent with persistent pairs
+  const myPair = useMemo(() => {
     if (!playerKey) return null;
-    if (role === "A") return pairedBKey;
-    if (role === "B") return pairedAKey;
+    const list = Object.values(pairsObj || {});
+    for (const p of list) {
+      if (p?.A === playerKey || p?.B === playerKey) return p;
+    }
     return null;
-  })();
+  }, [pairsObj, playerKey]);
+
+  const opponentKey = myPair ? (myPair.A === playerKey ? myPair.B : myPair.A) : null;
   const opponentChoice = opponentKey ? roundPlayers[opponentKey]?.choice ?? null : null;
 
-  // Turn logic (updated for sequential games: A always starts each round)
+  // Turn logic (sequential: A in the pair moves first)
   const isMyTurn = useMemo(() => {
-    if (!settings || !playerKey || myIndex === -1) return false;
+    if (!settings || !playerKey) return false;
     if (myChoice === 0 || myChoice === 1) return false; // already moved
     if (!settings.sequential) return true;
 
-    if (role === "A") {
-      // In sequential mode A always moves first each round (even after an aborted prior round)
-      return true;
-    }
-    if (role === "B") {
-      if (!pairedAKey) return false;
-      const aEntry = roundPlayers[pairedAKey];
-      return !!(aEntry && (aEntry.choice === 0 || aEntry.choice === 1));
-    }
-    return false;
-  }, [settings, playerKey, myIndex, myChoice, role, roundPlayers, pairedAKey]);
+    if (!myPair) return false;
+    if (myPair.A === playerKey) return true; // I'm A
+    const aEntry = roundPlayers[myPair.A];
+    return !!(aEntry && (aEntry.choice === 0 || aEntry.choice === 1));
+  }, [settings, playerKey, myChoice, myPair, roundPlayers]);
 
   // Game finished?
   const gameFinished =
@@ -406,15 +407,18 @@ function StudentView() {
   const summaryData = (() => {
     if (!gameFinished || !fullGameSnapshot || !payoffs || !settings) return null;
     const roundsCount = settings.rounds;
-    const playersObj = fullGameSnapshot.players || {};
+    const playersObjAll = fullGameSnapshot.players || {};
     const roundsObj = fullGameSnapshot.rounds || {};
-    const pairs = [];
-    const pairCount = Math.min(Aglobal.length, Bglobal.length);
-    for (let i = 0; i < pairCount; i++) {
-      const aKey = Aglobal[i];
-      const bKey = Bglobal[i];
-      const aPlayer = playersObj[aKey] || { name: "A?" };
-      const bPlayer = playersObj[bKey] || { name: "B?" };
+    const pairsList = Object.entries(fullGameSnapshot.pairs || {})
+      .map(([k, v]) => ({ key: Number(k), A: v?.A, B: v?.B }))
+      .filter(p => p.A && p.B)
+      .sort((a, b) => a.key - b.key);
+
+    const pairs = pairsList.map((p, i) => {
+      const aKey = p.A;
+      const bKey = p.B;
+      const aPlayer = playersObjAll[aKey] || { name: "A?" };
+      const bPlayer = playersObjAll[bKey] || { name: "B?" };
       const perRound = [];
       let totalA = 0;
       let totalB = 0;
@@ -442,7 +446,7 @@ function StudentView() {
           payoffB: payoffPair[1],
         });
       }
-      pairs.push({
+      return {
         index: i + 1,
         aKey,
         bKey,
@@ -451,8 +455,8 @@ function StudentView() {
         rounds: perRound,
         totalA,
         totalB,
-      });
-    }
+      };
+    });
     return { pairs };
   })();
 
@@ -967,6 +971,8 @@ function InstructorView() {
   // NEW: track startedAt + completion state of current round
   const [currentRoundStartedAt, setCurrentRoundStartedAt] = useState(null); // NEW
   const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false); // NEW
+  // NEW: persistent pairs
+  const [pairsObj, setPairsObj] = useState({});
 
   // Settings & payoffs subscription
   useEffect(() => {
@@ -1076,7 +1082,46 @@ function InstructorView() {
     };
   }, [gameCode, settings.currentRound, settings.autoProgress, settings.rounds]);
 
-  // NEW: auto-complete a round when all pairs have chosen AND minOpenSeconds elapsed
+  // Subscribe to pairs
+  useEffect(() => {
+    if (!gameCode) return () => {};
+    const pr = ref(db, `games/${gameCode}/pairs`);
+    const unsub = onValue(pr, (snap) => setPairsObj(snap.val() || {}));
+    return () => unsub();
+  }, [gameCode]);
+
+  // Maintain pairs deterministically (admin-only write)
+  useEffect(() => {
+    if (!gameCode) return;
+    // Order by joinedAt for stability
+    const allA = [...players]
+      .filter((p) => p.role === "A")
+      .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0))
+      .map((p) => p.key);
+    const allB = [...players]
+      .filter((p) => p.role === "B")
+      .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0))
+      .map((p) => p.key);
+
+    const usedA = new Set(Object.values(pairsObj || {}).map((p) => p.A).filter(Boolean));
+    const usedB = new Set(Object.values(pairsObj || {}).map((p) => p.B).filter(Boolean));
+
+    const unpairedA = allA.filter((k) => !usedA.has(k));
+    const unpairedB = allB.filter((k) => !usedB.has(k));
+    const toMake = Math.min(unpairedA.length, unpairedB.length);
+    if (toMake <= 0) return;
+
+    const next = { ...(pairsObj || {}) };
+    let idx = Object.keys(next).length;
+    for (let i = 0; i < toMake; i++) {
+      next[String(idx++)] = { A: unpairedA[i], B: unpairedB[i] };
+    }
+    set(ref(db, `games/${gameCode}/pairs`), next).catch((e) =>
+      console.error("pairs update failed", e)
+    );
+  }, [gameCode, players, pairsObj]);
+
+  // Auto-complete round when all pairs have chosen and min time elapsed
   useEffect(() => {
     if (!gameCode) return;
     if (!settings.autoProgress) return;
@@ -1085,59 +1130,43 @@ function InstructorView() {
     const r = settings.currentRound || 1;
     const minSecs = settings.minOpenSeconds ?? 0;
 
-    // Build ordered role arrays
-    const aKeys = players.filter(p => p.role === "A").map(p => p.key);
-    const bKeys = players.filter(p => p.role === "B").map(p => p.key);
-    const pairCount = Math.min(aKeys.length, bKeys.length);
-    if (pairCount === 0) return; // nothing to do
+    const list = Object.values(pairsObj || {}).filter((p) => p.A && p.B);
+    if (list.length === 0) return;
 
-    // Check if every pair has both choices
-    for (let i = 0; i < pairCount; i++) {
-      const aEntry = roundSnapshot[aKeys[i]];
-      const bEntry = roundSnapshot[bKeys[i]];
+    for (const p of list) {
+      const aEntry = roundSnapshot[p.A];
+      const bEntry = roundSnapshot[p.B];
       const aDone = aEntry && (aEntry.choice === 0 || aEntry.choice === 1);
       const bDone = bEntry && (bEntry.choice === 0 || bEntry.choice === 1);
       if (!aDone || !bDone) return; // still waiting
     }
 
-    // All pairs done; ensure min time elapsed
     if (!currentRoundStartedAt) return;
     const elapsed = Date.now() - currentRoundStartedAt;
+    const complete = () =>
+      set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true).catch((e) =>
+        console.error("auto-complete error", e)
+      );
+
     if (elapsed < minSecs * 1000) {
       const remaining = minSecs * 1000 - elapsed + 25;
       const t = setTimeout(() => {
-        // Re-check completion & still same round
-        if (!currentRoundCompleted && settings.currentRound === r) {
-          set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true)
-            .catch(e => console.error("auto-complete (delayed) error", e));
-        }
+        if (!currentRoundCompleted && settings.currentRound === r) complete();
       }, remaining);
       return () => clearTimeout(t);
     } else {
-      // Min time already satisfied
-      set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true)
-        .catch(e => console.error("auto-complete error", e));
+      complete();
     }
   }, [
     gameCode,
     settings.autoProgress,
     settings.currentRound,
     settings.minOpenSeconds,
-    players,
+    pairsObj,
     roundSnapshot,
     currentRoundStartedAt,
-    currentRoundCompleted
+    currentRoundCompleted,
   ]);
-
-  // Subscribe to currentGame (public screen toggle)
-  useEffect(() => {
-    const cgRef = ref(db, "currentGame");
-    const unsub = onValue(cgRef, snap => {
-      const v = snap.val();
-      setCurrentScreenGame(typeof v === "string" ? v : null);
-    });
-    return () => unsub();
-  }, []);
 
   const updateSettings = async (partial) => {
     setSettings((s) => ({ ...s, ...partial }));
@@ -1167,7 +1196,7 @@ function InstructorView() {
       await set(ref(db, `games/${gameCode}/settings`), sToWrite);
       await set(ref(db, `games/${gameCode}/payoffs`), payoffs);
       await set(ref(db, `games/${gameCode}/rounds/1/startedAt`), Date.now());
-      // NEW: point /currentGame to this code for /screen
+      await set(ref(db, `games/${gameCode}/pairs`), {}); // NEW: reset pairs
       await set(ref(db, "currentGame"), gameCode);
       setSettings((s) => ({ ...s, currentRound: 1 }));
       setPlayers([]);
@@ -1270,6 +1299,20 @@ function InstructorView() {
     } catch (e) {
       console.error(e);
       alert("Failed to drop inactive users.");
+    }
+  };
+
+  // === NEW: Reset all pairs (clears games/{gameCode}/pairs; maintenance effect will rebuild deterministically)
+  const resetAllPairs = async () => {
+    if (!gameCode) return alert("Enter a game code first");
+    if (!window.confirm("Reset all pairs? They will be immediately re-created from current players.")) return;
+    try {
+      await set(ref(db, `games/${gameCode}/pairs`), {});
+      setPairsObj({});
+      alert("Pairs reset.");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to reset pairs.");
     }
   };
 
@@ -1470,7 +1513,9 @@ function InstructorView() {
       </div>
 
       <div>
-        <h3 className="text-grey-500">Payoff matrix (A, B)</h3>
+        <h3 className="text-grey-500 mb-2">
+          Payoff matrix (A, B)
+        </h3>
         <table className="w-full text-center mt-2 border-separate border-spacing-2">
           <thead>
             <tr>
@@ -1584,15 +1629,6 @@ function InstructorView() {
       <div className="grid gap-2">
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={revealAllPayoffs}
-            disabled={!gameCode}
-            className={`p-3 rounded ${
-              gameCode ? "cursor-allowed" : "cursor-not-allowed"
-            }`}
-          >
-            Reveal payoffs
-          </button>
-          <button
             onClick={dropInactiveUsers}
             disabled={!gameCode}
             className={`p-3 rounded ${
@@ -1601,6 +1637,16 @@ function InstructorView() {
             title="Remove only players who have not yet chosen this round and force round end"
           >
             Drop inactive users
+          </button>
+          <button
+            onClick={resetAllPairs}
+            disabled={!gameCode}
+            className={`p-3 rounded ${
+              gameCode ? "cursor-allowed" : "cursor-not-allowed"
+            }`}
+            title="Clear all pairs and rebuild them from current players"
+          >
+            Reset pairs
           </button>
           <button
             onClick={wipeAllGames}
