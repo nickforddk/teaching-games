@@ -957,7 +957,7 @@ function InstructorView() {
     rounds: 1,
     currentRound: 1,
     labels: { A: ["Cooperate", "Defect"], B: ["Cooperate", "Defect"] },
-    minOpenSeconds: 10, // NEW
+    minOpenSeconds: 10,
   });
   const [payoffs, setPayoffs] = useState({
     CC: [3, 3],
@@ -970,7 +970,13 @@ function InstructorView() {
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
   const prevCompletedRef = useRef(undefined);
   const [currentScreenGame, setCurrentScreenGame] = useState(null);
-  const [lastRoundCompleted, setLastRoundCompleted] = useState(false); // will now be set
+  const [lastRoundCompleted, setLastRoundCompleted] = useState(false);
+  // NEW: missing state declarations
+  const [pairsObj, setPairsObj] = useState({});
+  const [currentRoundStartedAt, setCurrentRoundStartedAt] = useState(null);
+  const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false);
+  // NEW: finished flag
+  const gameFinished = settings.currentRound === settings.rounds && lastRoundCompleted;
 
   // NEW: subscribe to currentGame so toggleScreen works reliably
   useEffect(() => {
@@ -1103,7 +1109,7 @@ function InstructorView() {
   useEffect(() => {
     if (!gameCode) return () => {};
     const pr = ref(db, `games/${gameCode}/pairs`);
-    const unsub = onValue(pr, (snap) => setPairsObj(snap.val() || {}));
+    const unsub = onValue(pr, snap => setPairsObj(snap.val() || {}));
     return () => unsub();
   }, [gameCode]);
 
@@ -1147,21 +1153,22 @@ function InstructorView() {
     const r = settings.currentRound || 1;
     const minSecs = settings.minOpenSeconds ?? 0;
 
-    const list = Object.values(pairsObj || {}).filter((p) => p.A && p.B);
+    const list = Object.values(pairsObj || {}).filter(p => p.A && p.B);
     if (list.length === 0) return;
 
+    // Use roundSnapshot (not roundPlayers)
     for (const p of list) {
-      const aEntry = roundPlayers[p.A];
-      const bEntry = roundPlayers[p.B];
+      const aEntry = roundSnapshot[p.A];
+      const bEntry = roundSnapshot[p.B];
       const aDone = aEntry && (aEntry.choice === 0 || aEntry.choice === 1);
       const bDone = bEntry && (bEntry.choice === 0 || bEntry.choice === 1);
-      if (!aDone || !bDone) return; // still waiting
+      if (!aDone || !bDone) return;
     }
 
     if (!currentRoundStartedAt) return;
     const elapsed = Date.now() - currentRoundStartedAt;
     const complete = () =>
-      set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true).catch((e) =>
+      set(ref(db, `games/${gameCode}/rounds/${r}/completed`), true).catch(e =>
         console.error("auto-complete error", e)
       );
 
