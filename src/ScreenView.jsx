@@ -14,19 +14,19 @@ export default function ScreenView() {
   const [gameSnapshot, setGameSnapshot] = useState(null);
   const [connected, setConnected] = useState(true);
 
-  // Monitor RTDB connection state (helps detect blocked websockets in iframes)
+  // Safe embedded check (cross-origin iframes can throw)
+  const isEmbedded = useMemo(() => {
+    try { return window.self !== window.top; } catch { return true; }
+  }, []);
+
+  // Monitor RTDB connection (websocket) state
   useEffect(() => {
     const cRef = ref(db, ".info/connected");
-    const unsub = onValue(cRef, (snap) => {
-      const v = !!snap.val();
-      setConnected(v);
-      // Debug if needed:
-      // console.debug("RTDB connected (iframe:", window.top !== window.self, "):", v);
-    });
+    const unsub = onValue(cRef, (snap) => setConnected(!!snap.val()));
     return () => unsub();
   }, []);
 
-  // Existing: subscribe to currentGame -> setCurrentGameCode
+  // Primary subscription for currentGame (works in normal windows)
   useEffect(() => {
     const cgRef = ref(db, "currentGame");
     const unsub = onValue(cgRef, (snap) => {
@@ -36,7 +36,29 @@ export default function ScreenView() {
     return () => unsub();
   }, []);
 
-  // Existing: subscribe to game snapshot when we have a code
+  // Fallback: poll currentGame when embedded or when disconnected
+  useEffect(() => {
+    if (!isEmbedded) return () => {};
+    let cancelled = false;
+    let t;
+    async function poll() {
+      try {
+        const s = await get(ref(db, "currentGame"));
+        if (!cancelled) {
+          const v = s.exists() ? s.val() : null;
+          setCurrentGameCode(typeof v === "string" ? v : null);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) t = setTimeout(poll, connected ? 5000 : 2000);
+      }
+    }
+    poll();
+    return () => { cancelled = true; if (t) clearTimeout(t); };
+  }, [isEmbedded, connected]);
+
+  // Subscribe to the current game's data (normal flow)
   useEffect(() => {
     if (!currentGameCode) return () => {};
     const gRef = ref(db, `games/${currentGameCode}`);
@@ -44,31 +66,24 @@ export default function ScreenView() {
     return () => unsub();
   }, [currentGameCode]);
 
-  // NEW: polling fallback when embedded (iframe) or when not connected
+  // Fallback: poll the current game when embedded (works even if websockets are blocked)
   useEffect(() => {
-    const embedded = window.top !== window.self;
-    if (!embedded || !currentGameCode) return () => {};
+    if (!isEmbedded || !currentGameCode) return () => {};
     let cancelled = false;
     let t;
-
     async function poll() {
       try {
         const s = await get(ref(db, `games/${currentGameCode}`));
         if (!cancelled) setGameSnapshot(s.val() || null);
       } catch {
-        // ignore transient errors
+        // ignore
       } finally {
         if (!cancelled) t = setTimeout(poll, connected ? 2000 : 1000);
       }
     }
-
-    // Start polling immediately; onValue will still push updates if available
     poll();
-    return () => {
-      cancelled = true;
-      if (t) clearTimeout(t);
-    };
-  }, [currentGameCode, connected]);
+    return () => { cancelled = true; if (t) clearTimeout(t); };
+  }, [isEmbedded, currentGameCode, connected]);
 
   const { settings, payoffs, players, rounds } = gameSnapshot || {};
 
