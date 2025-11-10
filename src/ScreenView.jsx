@@ -309,7 +309,7 @@ export default function ScreenView() {
               </table>
             </div>
           ))}
-          {summaryPairs.length === 0 && <div className="text-center text-sm text-grey-400 dark:text-grey-600">No complete pairs.</div>}
+          {summaryPairs.length === 0 && <div className="text-center text-sm text-grey-500 animate-pulse">No complete pairs.</div>}
         </div>
       </div>
       <div className="md:w-xs bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 flex md:flex-col gap-4 items-center justify-between rounded p-4">
