@@ -272,10 +272,13 @@ function StudentView() {
 
   // Last round completion watch
   useEffect(() => {
-    if (!gameCode || !settings?.rounds) return () => {};
+    if (!gameCode || !settings?.rounds) {
+      setLastRoundCompleted(false); // RESET when game code cleared or rounds undefined
+      return () => {};
+    }
     const compRef = ref(db, `games/${gameCode}/rounds/${settings.rounds}/completed`);
     const unsub = onValue(compRef, (snap) => setLastRoundCompleted(!!snap.val()));
-    return () => unsub(); // FIX: invoke cleanup
+    return () => unsub();
   }, [gameCode, settings?.rounds]);
 
   // Reset myChoice on round change
@@ -967,12 +970,26 @@ function InstructorView() {
   const [fullGameSnapshot, setFullGameSnapshot] = useState(null);
   const prevCompletedRef = useRef(undefined);
   const [currentScreenGame, setCurrentScreenGame] = useState(null);
-  const [lastRoundCompleted, setLastRoundCompleted] = useState(false);
-  // NEW: track startedAt + completion state of current round
-  const [currentRoundStartedAt, setCurrentRoundStartedAt] = useState(null); // NEW
-  const [currentRoundCompleted, setCurrentRoundCompleted] = useState(false); // NEW
-  // NEW: persistent pairs
-  const [pairsObj, setPairsObj] = useState({});
+  const [lastRoundCompleted, setLastRoundCompleted] = useState(false); // will now be set
+
+  // NEW: subscribe to currentGame so toggleScreen works reliably
+  useEffect(() => {
+    const gRef = ref(db, "currentGame");
+    const unsub = onValue(gRef, snap => setCurrentScreenGame(snap.val() || null));
+    return () => unsub();
+  }, []);
+
+  // NEW: subscribe to completion of the final round
+  useEffect(() => {
+    if (!gameCode || !settings?.rounds) {
+      setLastRoundCompleted(false);
+      return () => {};
+    }
+    const last = settings.rounds || 1;
+    const lastRef = ref(db, `games/${gameCode}/rounds/${last}/completed`);
+    const unsub = onValue(lastRef, snap => setLastRoundCompleted(!!snap.val()));
+    return () => unsub();
+  }, [gameCode, settings?.rounds]);
 
   // Settings & payoffs subscription
   useEffect(() => {
@@ -1134,8 +1151,8 @@ function InstructorView() {
     if (list.length === 0) return;
 
     for (const p of list) {
-      const aEntry = roundSnapshot[p.A];
-      const bEntry = roundSnapshot[p.B];
+      const aEntry = roundPlayers[p.A];
+      const bEntry = roundPlayers[p.B];
       const aDone = aEntry && (aEntry.choice === 0 || aEntry.choice === 1);
       const bDone = bEntry && (bEntry.choice === 0 || bEntry.choice === 1);
       if (!aDone || !bDone) return; // still waiting
@@ -1323,6 +1340,7 @@ function InstructorView() {
     try {
       await remove(ref(db, "games"));
       await remove(ref(db, "currentGame"));
+      setCurrentScreenGame(null); // NEW: local reset
       setGameCode("");
       setSettings(s => ({ ...s, currentRound: 1 }));
       setPlayers([]);
@@ -1339,15 +1357,16 @@ function InstructorView() {
   const toggleScreen = async () => {
     try {
       if (currentScreenGame === gameCode) {
-        await remove(ref(db, "currentGame"));            // disables
+        await remove(ref(db, "currentGame")); // disables
         alert("Screen disabled.");
       } else if (currentScreenGame && !gameCode) {
-        await remove(ref(db, "currentGame"));            // disables
+        await remove(ref(db, "currentGame")); // disables
         alert("Screen disabled.");
       } else {
-        await set(ref(db, "currentGame"), gameCode);     // enables
+        await set(ref(db, "currentGame"), gameCode); // enables
         alert("Screen enabled for this game.");
       }
+      // no local setState needed; subscription updates currentScreenGame
     } catch (e) {
       console.error(e);
       alert("Failed to toggle screen.");
@@ -1370,10 +1389,10 @@ function InstructorView() {
           <button
             onClick={startNewGame}
             disabled={!gameCode}
-            className={`p-3 rounded flex-1 ${currentScreenGame === gameCode || players.length > 0 ? "btn-stop" : "btn-go"}`}
+            className={`p-3 rounded flex-1 ${currentScreenGame === gameCode && !gameFinished ? "btn-stop" : "btn-go"}`}
             title="Start a new game or restart a game already under way (forces users to re-join)"
           >
-            {currentScreenGame === gameCode || players.length > 0 ? "Reset game" : "Start game"}
+            {currentScreenGame === gameCode && !gameFinished ? "Reset game" : "Start game"}
           </button>
           {/* Always show manual override button (even when autoProgress is on) */}
           <button
@@ -1382,7 +1401,7 @@ function InstructorView() {
             className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "" : "btn-subtle"}`}
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
-            {settings.rounds > 1 && settings.currentRound < settings.rounds ? "Next round" : "End game"}
+            {settings.rounds > 1 && !lastRoundCompleted ? "Next round" : "End game"}
           </button>
           <button
             onClick={toggleScreen}
