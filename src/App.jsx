@@ -549,7 +549,7 @@ function StudentView() {
   // Opponent choice visibility
   const canRevealOpponentChoice = (() => {
     if (!opponentKey) return false;
-    if (settings?.revealChoices || settings?.sequential) return opponentChoice === 0 || opponentChoice === 1;
+    if (settings?.revealChoices || (settings?.sequential && !settings?.revealPayoffs)) return opponentChoice === 0 || opponentChoice === 1;
     return (currentRoundCompleted || gameFinished) && (opponentChoice === 0 || opponentChoice === 1) && (myChoice === 0 || myChoice === 1);
   })();
 
