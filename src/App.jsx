@@ -1404,7 +1404,7 @@ function InstructorView() {
           {/* Always show manual override button (even when autoProgress is on) */}
           <button
             onClick={endOrNextRound}
-            disabled={!gameCode}
+            disabled={!gameCode || gameFinished}
             className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "" : "btn-subtle"}`}
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
