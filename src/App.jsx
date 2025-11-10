@@ -1408,7 +1408,7 @@ function InstructorView() {
             className={`p-3 rounded flex-1 ${settings.rounds > 1 && settings.currentRound < settings.rounds ? "" : "btn-subtle"}`}
             title="Force end of current round (manual override even if automatic progression is enabled)"
           >
-            {settings.rounds > 1 && !lastRoundCompleted ? "Next round" : "End game"}
+            {settings.rounds > 1 && settings.currentRound < settings.rounds ? "Next round" : "End game"}
           </button>
           <button
             onClick={toggleScreen}
