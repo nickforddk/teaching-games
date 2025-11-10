@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "./firebase";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, get } from "firebase/database";
 
 const parsePair = (x) => {
   if (!x) return [0, 0];
@@ -12,22 +12,63 @@ const parsePair = (x) => {
 export default function ScreenView() {
   const [currentGameCode, setCurrentGameCode] = useState(null);
   const [gameSnapshot, setGameSnapshot] = useState(null);
+  const [connected, setConnected] = useState(true);
 
+  // Monitor RTDB connection state (helps detect blocked websockets in iframes)
+  useEffect(() => {
+    const cRef = ref(db, ".info/connected");
+    const unsub = onValue(cRef, (snap) => {
+      const v = !!snap.val();
+      setConnected(v);
+      // Debug if needed:
+      // console.debug("RTDB connected (iframe:", window.top !== window.self, "):", v);
+    });
+    return () => unsub();
+  }, []);
+
+  // Existing: subscribe to currentGame -> setCurrentGameCode
   useEffect(() => {
     const cgRef = ref(db, "currentGame");
-    const off = onValue(cgRef, snap => {
+    const unsub = onValue(cgRef, (snap) => {
       const v = snap.val();
       setCurrentGameCode(typeof v === "string" ? v : null);
     });
-    return () => off();
+    return () => unsub();
   }, []);
 
+  // Existing: subscribe to game snapshot when we have a code
   useEffect(() => {
-    if (!currentGameCode) { setGameSnapshot(null); return; }
+    if (!currentGameCode) return () => {};
     const gRef = ref(db, `games/${currentGameCode}`);
-    const off = onValue(gRef, snap => setGameSnapshot(snap.val() || null));
-    return () => off();
+    const unsub = onValue(gRef, (snap) => setGameSnapshot(snap.val() || null));
+    return () => unsub();
   }, [currentGameCode]);
+
+  // NEW: polling fallback when embedded (iframe) or when not connected
+  useEffect(() => {
+    const embedded = window.top !== window.self;
+    if (!embedded || !currentGameCode) return () => {};
+    let cancelled = false;
+    let t;
+
+    async function poll() {
+      try {
+        const s = await get(ref(db, `games/${currentGameCode}`));
+        if (!cancelled) setGameSnapshot(s.val() || null);
+      } catch {
+        // ignore transient errors
+      } finally {
+        if (!cancelled) t = setTimeout(poll, connected ? 2000 : 1000);
+      }
+    }
+
+    // Start polling immediately; onValue will still push updates if available
+    poll();
+    return () => {
+      cancelled = true;
+      if (t) clearTimeout(t);
+    };
+  }, [currentGameCode, connected]);
 
   const { settings, payoffs, players, rounds } = gameSnapshot || {};
 
@@ -268,13 +309,13 @@ export default function ScreenView() {
               </table>
             </div>
           ))}
-          {summaryPairs.length === 0 && <div className="text-center text-sm text-grey">No complete pairs.</div>}
+          {summaryPairs.length === 0 && <div className="text-center text-sm text-grey-400 dark:text-grey-600">No complete pairs.</div>}
         </div>
       </div>
-      <div className="md:w-xs bg-grey-500 dark:bg-grey-600 text-white flex md:flex-col gap-4 items-center justify-between rounded">
-          <code className="text-4xl mt-6 mx-4 px-2 py-1">{currentGameCode}</code>
-          <div className="flex flex-col md:w-full items-center text-center text-md leading-5 px-4 py-8 bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 rounded">
-            <span className="qrcode size-[4rem] md:size-[10rem] mb-2"></span>
+      <div className="md:w-xs bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 flex md:flex-col gap-4 items-center justify-between rounded p-4">
+          <code className="text-4xl m-1 md:mt-2 px-2 py-1">{currentGameCode}</code>
+          <div className="flex flex-col md:w-full items-center text-center text-md leading-5 md:py-4 bg-grey-400 text-blue-800 dark:bg-grey-700 dark:text-grey-200 rounded">
+            <span className="qrcode size-20 md:size-30 mb-2"></span>
             git.nickford.com/<span>teaching-games</span>
           </div>
       </div>
