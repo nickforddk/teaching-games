@@ -809,7 +809,7 @@ function StudentView() {
                   </div>
                 )}
 
-                {canRevealOpponentChoice && (settings?.sequential || (myChoice === 0 || myChoice === 1)) && (
+                {canRevealOpponentChoice && (
                   <div className={`flex items-center gap-1 text-base border p-2 rounded ${roleAltClass}bg text-white border-transparent`}>
                     <i className="icon i-other ml-1 mr-2"></i> Opponent chose: <span className="font-semibold">{choiceLabel(role === "A" ? "B" : "A", opponentChoice)}</span>
                   </div>
